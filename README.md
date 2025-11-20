@@ -1,160 +1,105 @@
-\# ScopicMedia Landing Page
+ScopicMedia — Landing Page
 
+Retro roots. Future vision.
+A CRT-styled, PS1-era boot-screen website for ScopicMedia, a one-person indie game studio developing:
 
+HeroByte VTT — NES/SNES-inspired browser VTT
 
-\*\*Retro roots. Future vision.\*\*  
+LowPolyKarter — low-poly, drift-happy kart racer prototype
 
-This repo contains the CRT-styled landing page for \*\*ScopicMedia\*\*, a one-person indie game studio building:
+The page simulates a 90s console startup: CRT scanlines, phosphor glow, fake BIOS output, and a smooth transition into a retro-modern interface.
 
+✨ Features
+Full CRT Simulation
 
+Scanlines, vignette, subtle flicker
 
-\- \*\*HeroByte VTT\*\* – a browser-based, NES/SNES-inspired virtual tabletop  
+“Power-on” warmup animation
 
-\- \*\*LowPolyKarter\*\* – a high-octane low-poly kart racer prototype
+Phosphor-glow text rendering
 
+PS1-Era Boot Flow
 
+ScopicMedia splash sequence
 
-The site is a single-page experience themed like a PS1/90s console boot screen, complete with CRT scanlines, flicker, and a faux BIOS boot sequence.
+Fake BIOS logs (Initializing BIOS…, Booting ScopicOS v1.0…)
 
+Automatic transition into main UI
 
+Retro-Modern UI Layer
 
----
+Tailwind (CDN) for layout + utilities
 
+Pixel fonts: Press Start 2P + VT323
 
+Lucide icons for lightweight vectors
 
-\## Features
+Project Panels
+HeroByte VTT
 
+System-agnostic, NES/SNES-themed VTT
 
+WebRTC voice, live sync, Konva rendering
 
-\- \*\*Full CRT Simulation\*\*
+Links to full repo
 
-&nbsp; - Scanlines, vignette, and subtle flicker overlay
+LowPolyKarter
 
-&nbsp; - “Turn on” animation mimicking old CRTs warming up
+Low-poly arcade racer prototype
 
-&nbsp; - Phosphor-style glow for text and UI
+Drift mechanics + 90s vibe
 
+Repo link included
 
+Dev Logs
 
-\- \*\*PS1-Era Boot Sequence\*\*
+Static retro terminal “cards”
 
-&nbsp; - Splash logo animation
+Date-stamped update entries
 
-&nbsp; - Fake terminal output (`Initializing BIOS…`, `Booting ScopicOS v1.0…`)
+Contact Module
 
-&nbsp; - Smooth transition from boot screen into the main site
+Terminal-themed form (USER_ID, COMM_CHANNEL, DATA_PACKET)
 
+Fake transmit handler (alert("TRANSMISSION SENT SUCCESSFULLY."))
 
+Placeholder row for socials
 
-\- \*\*Retro-Modern UI\*\*
+Responsive Layout
 
-&nbsp; - Tailwind CSS (CDN) for layout and utilities
+Mobile-first Tailwind grid
 
-&nbsp; - Pixel fonts:
+Scales cleanly up to desktop
 
-&nbsp;   - `Press Start 2P` for headings
+🛠 Tech Stack
 
-&nbsp;   - `VT323` for body and terminal text
+Minimal on purpose:
 
-&nbsp; - Lucide icons for lightweight vector icons
+HTML5 — single-file index.html
 
+Tailwind CDN — no build step
 
+Google Fonts — Press Start 2P, VT323
 
-\- \*\*Project Highlights\*\*
+Lucide Icons — CDN
 
-&nbsp; - \*\*HeroByte VTT\*\*
+Vanilla JS — boot sequence + form logic
 
-&nbsp;   - System-agnostic, NES/SNES-inspired virtual tabletop
+No bundler, no framework, no tooling
 
-&nbsp;   - Mentions WebRTC voice, real-time sync, Konva rendering
+🚀 Getting Started
 
-&nbsp;   - Links out to the HeroByte GitHub repo
-
-&nbsp; - \*\*LowPolyKarter\*\*
-
-&nbsp;   - Low-poly arcade kart racer concept
-
-&nbsp;   - Drift-focused, 90s-style racing vibe
-
-&nbsp;   - Links out to the kart game GitHub repo
-
-
-
-\- \*\*Developer Logs Section\*\*
-
-&nbsp; - Static dev log cards showing dated updates
-
-&nbsp; - Themed like a retro terminal/dev console
-
-
-
-\- \*\*Contact Panel\*\*
-
-&nbsp; - Themed input fields (`USER\_ID`, `COMM\_CHANNEL`, `DATA\_PACKET`)
-
-&nbsp; - Fake submit handler (`alert('TRANSMISSION SENT SUCCESSFULLY.')`)
-
-&nbsp; - Social icon row for future links (Twitter/X, GitHub, Instagram, etc.)
-
-
-
-\- \*\*Responsive Layout\*\*
-
-&nbsp; - Tailwind-driven responsive grid and typography
-
-&nbsp; - Mobile-first structure with desktop enhancements
-
-
-
----
-
-
-
-\## Tech Stack
-
-
-
-This project is intentionally lightweight:
-
-
-
-\- \*\*HTML5\*\* – Single `index.html` file
-
-\- \*\*Tailwind CSS\*\* via CDN – No build step required
-
-\- \*\*Google Fonts\*\* – `Press Start 2P` and `VT323`
-
-\- \*\*Lucide Icons\*\* via CDN
-
-\- \*\*Vanilla JavaScript\*\* – Handles boot sequence and simple form behavior
-
-
-
-There is \*\*no bundler, framework, or build tooling\*\* required for the current version.
-
-
-
----
-
-
-
-\## Getting Started
-
-
-
-You can run this site locally in two basic ways: direct file open (for quick preview) or with a tiny static HTTP server (recommended).
-
-
-
-\### 1. Clone the Repository
-
-
-
-```bash
+Clone and run locally:
 
 git clone https://github.com/<your-username>/<your-repo-name>.git
-
 cd <your-repo-name>
 
 
+Quick preview (double-click):
 
+index.html
+
+
+Recommended lightweight server:
+
+npx serve .
