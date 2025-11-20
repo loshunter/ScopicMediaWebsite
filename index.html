@@ -1,685 +1,454 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ScopicMedia | Hunter's Games, Tools & Experiments</title>
-  <meta name="description" content="ScopicMedia is Hunter's personal game & media lab — home of the HeroByte VTT and a low‑poly kart racer, plus experiments, prototypes, and portfolio work." />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://scopicmedia.com/" />
-  <meta name="theme-color" content="#0b0f1c" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScopicMedia | Retro Roots. Future Vision.</title>
+    <meta name="description" content="ScopicMedia Game Studio. Creators of HeroByte VTT and high-octane retro racers. Developing indie games with a PS1 aesthetic.">
+    <meta name="keywords" content="Indie Game Studio, HeroByte VTT, Kart Racer, Retro Games, PS1 Style, Game Dev">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Press Start 2P (Headers) and VT323 (Body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 
-  <!-- Open Graph -->
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="ScopicMedia | Hunter's Games & Experiments" />
-  <meta property="og:description" content="Hunter's personal game & media lab — HeroByte VTT, a low‑poly kart racer, and other retro‑futuristic experiments." />
-  <meta property="og:url" content="https://scopicmedia.com/" />
-  <meta property="og:image" content="https://dummyimage.com/1200x630/0b0f1c/00ffd5&text=ScopicMedia" />
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="ScopicMedia | Hunter's Games & Experiments" />
-  <meta name="twitter:description" content="Hunter's personal game & media lab — HeroByte VTT, a low‑poly kart racer, and other retro‑futuristic experiments." />
-  <meta name="twitter:image" content="https://dummyimage.com/1200x630/0b0f1c/00ffd5&text=ScopicMedia" />
+    <style>
+        :root {
+            --phosphor-primary: #33ff00; /* Classic Terminal Green */
+            --phosphor-secondary: #00ffff; /* Cyber Cyan */
+            --bg-color: #050505;
+            --crt-flicker: 0.02;
+        }
 
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+        body {
+            background-color: #000;
+            color: var(--phosphor-primary);
+            font-family: 'VT323', monospace;
+            margin: 0;
+            overflow-x: hidden;
+            -webkit-font-smoothing: none;
+        }
 
-  <!-- Tailwind CSS (browser runtime) -->
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        h1, h2, h3, .pixel-font {
+            font-family: 'Press Start 2P', cursive;
+            text-transform: uppercase;
+        }
 
-  <style>
-    :root {
-      --neon: #00ffd5;
-      --neon-2: #ff00a8;
-      --ink: #0b0f1c;
-      --ink-2: #101425;
-    }
+        /* --- CRT EFFECTS --- */
+        .crt-container {
+            position: relative;
+            min-height: 100vh;
+            width: 100%;
+            background: radial-gradient(circle, #1a1a1a 0%, #000000 100%);
+            overflow: hidden;
+        }
 
-    html, body {
-      background: #000;
-      color: #e5e7eb;
-      font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    }
+        /* Scanlines */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0),
+                rgba(255, 255, 255, 0) 50%,
+                rgba(0, 0, 0, 0.2) 50%,
+                rgba(0, 0, 0, 0.2)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 50;
+            animation: scanlineMove 10s linear infinite;
+        }
 
-    .pixel-font { font-family: 'Press Start 2P', system-ui, sans-serif; }
+        /* Moving Scan Bar */
+        .scan-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            position: fixed;
+            z-index: 51;
+            top: -10%;
+            animation: scanBar 6s linear infinite;
+            pointer-events: none;
+        }
 
-    /* CRT overlay */
-    .crt {
-      position: relative;
-      filter: contrast(1.1) saturate(1.1);
-    }
-    .crt::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background: repeating-linear-gradient(
-        to bottom,
-        rgba(255,255,255,0.03) 0px,
-        rgba(255,255,255,0.03) 1px,
-        rgba(0,0,0,0) 2px,
-        rgba(0,0,0,0) 4px
-      );
-      animation: scan 6s linear infinite;
-      mix-blend-mode: overlay;
-    }
-    .crt::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background: radial-gradient(ellipse at center, rgba(0,0,0,0) 60%, rgba(0,0,0,0.25) 80%, rgba(0,0,0,0.6) 100%);
-    }
-    @keyframes scan {
-      0% { background-position-y: 0; }
-      100% { background-position-y: 100vh; }
-    }
+        /* CRT Flicker & Glow */
+        .crt-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(18, 16, 16, 0.1);
+            opacity: 0;
+            z-index: 50;
+            pointer-events: none;
+            animation: flicker 0.15s infinite;
+        }
 
-    .flicker {
-      animation: flicker 3s infinite steps(100);
-    }
-    @keyframes flicker {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.98; }
-      52% { opacity: 1; }
-      54% { opacity: 0.97; }
-      56% { opacity: 1; }
-    }
+        .text-glow {
+            text-shadow: 0 0 5px var(--phosphor-primary), 0 0 10px var(--phosphor-primary);
+        }
+        
+        .text-glow-cyan {
+            color: var(--phosphor-secondary);
+            text-shadow: 0 0 5px var(--phosphor-secondary), 0 0 10px var(--phosphor-secondary);
+        }
 
-    .glow {
-      text-shadow: 0 0 6px var(--neon), 0 0 12px var(--neon), 0 0 24px var(--neon);
-    }
+        /* Screen Curvature Vignette */
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%);
+            box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
+            pointer-events: none;
+            z-index: 60;
+        }
 
-    .grid-bg {
-      background-image: 
-        linear-gradient(rgba(0,255,213,0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,255,213,0.05) 1px, transparent 1px),
-        radial-gradient(circle at 50% 0%, rgba(0,255,213,0.08), transparent 50%);
-      background-size: 24px 24px, 24px 24px, 100% 100%;
-      background-position: 0 0, 0 0, center;
-    }
+        /* --- ANIMATIONS --- */
+        @keyframes scanlineMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100%; }
+        }
 
-    .btn-neon {
-      position: relative;
-      border: 1px solid rgba(0,255,213,0.4);
-      color: #d1fae5;
-      transition: transform 120ms ease, box-shadow 200ms ease, background-color 200ms ease, border-color 200ms ease;
-      box-shadow: 0 0 0 rgba(0,255,213,0);
-      background: rgba(0,255,213,0.06);
-    }
-    .btn-neon:hover {
-      transform: translateY(-1px);
-      border-color: var(--neon);
-      box-shadow: 0 0 8px rgba(0,255,213,0.4), 0 0 24px rgba(0,255,213,0.25);
-      background: rgba(0,255,213,0.12);
-    }
-    .btn-secondary {
-      border-color: rgba(255,0,168,0.4);
-      color: #ffe4f7;
-      background: rgba(255,0,168,0.06);
-    }
-    .btn-secondary:hover {
-      border-color: var(--neon-2);
-      box-shadow: 0 0 8px rgba(255,0,168,0.4), 0 0 24px rgba(255,0,168,0.25);
-      background: rgba(255,0,168,0.12);
-    }
+        @keyframes scanBar {
+            0% { top: -10%; }
+            100% { top: 110%; }
+        }
 
-    /* Boot screen */
-    #boot {
-      position: fixed; inset: 0; z-index: 50;
-      background: radial-gradient(circle at center, #0b0f1c 0%, #000 80%);
-      display: grid; place-items: center;
-      color: #e5e7eb;
-      cursor: pointer; /* entire screen clickable to continue */
-    }
-    .boot-logo {
-      letter-spacing: 0.12em;
-      animation: bootLogo 2.8s ease-out forwards;
-      filter: drop-shadow(0 0 12px rgba(0,255,213,0.5));
-    }
-    @keyframes bootLogo {
-      0% { opacity: 0; transform: scale(0.92); }
-      25% { opacity: 1; transform: scale(1.02); }
-      60% { opacity: 1; transform: scale(1); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-    .boot-sub {
-      opacity: 0; animation: bootSub 2.2s ease-out 0.8s forwards;
-    }
-    @keyframes bootSub {
-      0% { opacity: 0; }
-      100% { opacity: 0.8; }
-    }
+        @keyframes flicker {
+            0% { opacity: 0.02; }
+            5% { opacity: 0.05; }
+            10% { opacity: 0.02; }
+            15% { opacity: 0.06; }
+            100% { opacity: 0.02; }
+        }
 
-    .noise {
-      position: absolute; inset: 0; pointer-events: none; opacity: .03;
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/></filter><rect width="160" height="160" filter="url(%23n)" opacity="0.8"/></svg>');
-      animation: noise 1.5s steps(6) infinite;
-    }
-    @keyframes noise { from { transform: translate(0,0);} 50% { transform: translate(-1%, 1%);} to { transform: translate(0,0);} }
+        @keyframes turnOn {
+            0% { transform: scale(1, 0.002) scaleX(0.2); filter: brightness(30); opacity: 0;}
+            30% { transform: scale(1, 0.002) scaleX(1); filter: brightness(10); opacity: 1;}
+            60% { transform: scale(1, 0.002) scaleX(1); filter: brightness(10); opacity: 1;}
+            100% { transform: scale(1, 1) scaleX(1); filter: brightness(1); opacity: 1;}
+        }
 
-    /* Reduce motion */
-    @media (prefers-reduced-motion: reduce) {
-      .crt::before { animation: none; }
-      .flicker, .boot-logo, .boot-sub, .noise { animation: none !important; }
-      * { scroll-behavior: auto !important; }
-    }
+        /* --- UTILITIES --- */
+        .hidden-content {
+            display: none;
+        }
 
-    /* Content cards */
-    .card {
-      background: linear-gradient(180deg, rgba(16,20,37,0.85), rgba(9,12,22,0.85));
-      border: 1px solid rgba(255,255,255,0.06);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.03);
-      backdrop-filter: blur(2px);
-    }
+        .glitch-hover:hover {
+            animation: glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+            color: #fff;
+        }
 
-    .kbd {
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.06);
-      padding: 0.1rem 0.35rem; border-radius: 4px; font-size: .8em;
-    }
-
-    /* Wordmark kerning helpers */
-    .wordmark { letter-spacing: 0.12em; display: inline-block; }
-    .wordmark .tight { margin-left: -0.18em; display: inline-block; }
-  </style>
+        @keyframes glitch-skew {
+            0% { transform: skew(0deg); }
+            20% { transform: skew(-10deg); }
+            40% { transform: skew(10deg); }
+            60% { transform: skew(-5deg); }
+            80% { transform: skew(5deg); }
+            100% { transform: skew(0deg); }
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+            background: #000;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border: 1px solid var(--phosphor-primary);
+        }
+    </style>
 </head>
-<body class="min-h-screen bg-black text-gray-200 selection:bg-teal-300/20 selection:text-teal-200">
-  <!-- Boot / Splash -->
-  <div id="boot" role="dialog" aria-label="Boot sequence" aria-modal="true">
-    <div class="relative w-full h-full grid place-items-center">
-      <div class="noise"></div>
-      <div class="text-center pointer-events-none">
-        <div class="boot-logo">
-          <div class="pixel-font text-4xl sm:text-5xl md:text-6xl glow text-teal-300">
-            <span class="wordmark">SCOP<span class="tight">I</span>CMED<span class="tight">I</span>A</span>
-          </div>
-          <div class="mt-2 text-xs sm:text-sm tracking-widest text-teal-200/70">Interactive Entertainment</div>
+<body>
+
+    <!-- CRT Overlay Effects (Fixed on top) -->
+    <div class="scanlines"></div>
+    <div class="scan-bar"></div>
+    <div class="crt-overlay"></div>
+    <div class="vignette"></div>
+
+    <!-- BOOT SEQUENCE -->
+    <div id="boot-screen" class="fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center text-center p-4">
+        <div id="boot-logo" class="opacity-0 transition-opacity duration-1000 mb-8">
+            <div class="w-24 h-24 border-4 border-white rotate-45 mx-auto mb-4 flex items-center justify-center">
+                <div class="w-16 h-16 bg-white rotate-90"></div>
+            </div>
+            <h1 class="text-4xl md:text-6xl text-white tracking-widest font-bold pixel-font">SCOPIC</h1>
+            <h2 class="text-xl md:text-2xl text-yellow-400 tracking-widest mt-2 pixel-font">MEDIA</h2>
         </div>
-        <div class="boot-sub mt-10 text-teal-200/70">
-          <div class="text-xs sm:text-sm">Initialising graphics… Loading kernel…</div>
-          <div class="mt-4 text-[10px] sm:text-xs opacity-70">Press <span class="kbd">Enter</span> or click <span class="kbd">Skip</span> to continue</div>
+        <div id="boot-terminal" class="text-left w-full max-w-2xl font-mono text-lg text-gray-400 mt-12 h-32">
+            <!-- JS will type here -->
         </div>
-        <div class="mt-8 flex gap-3 justify-center pointer-events-auto">
-          <button id="skipIntro" type="button" class="btn-neon px-4 py-2 rounded uppercase text-xs pixel-font">Skip</button>
-          <button id="toggleSfxBoot" type="button" class="btn-secondary px-4 py-2 rounded uppercase text-xs pixel-font" aria-pressed="false">Enable Sounds</button>
-        </div>
-      </div>
     </div>
-  </div>
 
-  <!-- CRT overlay root -->
-  <div id="app" class="crt">
-    <!-- Top Nav -->
-    <header class="sticky top-0 z-40 backdrop-blur border-b border-white/5 bg-black/60">
-      <div class="max-w-7xl mx-auto px-4">
-        <div class="flex items-center justify-between h-16">
-          <a href="#home" class="flex items-center gap-2 group">
-            <span class="w-2 h-6 bg-teal-400 shadow-[0_0_12px_#00ffd5]"></span>
-            <span class="pixel-font text-sm sm:text-base tracking-widest group-hover:text-teal-300 transition-colors"><span class="wordmark">SCOP<span class="tight">I</span>CMED<span class="tight">I</span>A</span></span>
-          </a>
-          <nav aria-label="Primary" class="">
-            <ul class="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm">
-              <li><a href="#home" class="nav-link btn-neon px-3 py-1.5 rounded">Home</a></li>
-              <li><a href="#games" class="nav-link btn-neon px-3 py-1.5 rounded">Games</a></li>
-              <li><a href="#blog" class="nav-link btn-neon px-3 py-1.5 rounded">Devlog</a></li>
-              <li><a href="#about" class="nav-link btn-neon px-3 py-1.5 rounded">About</a></li>
-              <li><a href="#contact" class="nav-link btn-neon px-3 py-1.5 rounded">Contact</a></li>
-            </ul>
-          </nav>
-          <button id="sfxToggle" class="btn-secondary px-3 py-1.5 rounded text-xs" aria-pressed="false" title="Toggle UI sounds">SFX: Off</button>
-        </div>
-      </div>
-    </header>
-
-    <!-- Hero -->
-    <section id="home" class="relative overflow-hidden">
-      <div class="absolute inset-0 grid-bg opacity-40"></div>
-      <div class="absolute inset-0" aria-hidden="true">
-        <div class="h-full w-full" style="background: radial-gradient(1200px 400px at 50% -10%, rgba(0,255,213,0.12), transparent 60%);"></div>
-      </div>
-      <div class="relative max-w-7xl mx-auto px-4 pt-16 sm:pt-20 pb-20">
-        <div class="grid md:grid-cols-2 gap-10 items-center">
-          <div>
-            <h1 class="pixel-font text-3xl sm:text-4xl md:text-5xl leading-tight text-teal-300 glow">Retro vibes. Future tech.</h1>
-            <p class="mt-5 text-teal-100/80 max-w-prose">ScopicMedia is my personal game & media lab — a place for prototypes, tools, and weird retro‑futuristic experiments. From HeroByte VTT to a PS1‑style kart racer, I build things that feel nostalgic and play like new.</p>
-            <div class="mt-8 flex flex-wrap gap-3">
-              <a href="#games" class="btn-neon px-5 py-3 rounded font-semibold">Explore Games</a>
-              <a href="#blog" class="btn-secondary px-5 py-3 rounded font-semibold">Read Devlog</a>
+    <!-- MAIN APP CONTAINER -->
+    <div id="app-container" class="crt-container hidden-content opacity-0 transition-opacity duration-1000">
+        
+        <!-- Navigation -->
+        <nav class="sticky top-0 z-40 bg-black/90 border-b border-green-900 backdrop-blur-sm">
+            <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center gap-3 mb-4 md:mb-0">
+                    <i data-lucide="gamepad-2" class="text-green-400 w-8 h-8"></i>
+                    <span class="text-2xl pixel-font text-glow text-white">SCOPIC<span class="text-green-400">MEDIA</span></span>
+                </div>
+                <ul class="flex gap-6 md:gap-8 text-xl md:text-2xl">
+                    <li><a href="#home" class="hover:text-white hover:underline decoration-green-500 underline-offset-4 transition-all">HOME</a></li>
+                    <li><a href="#games" class="hover:text-white hover:underline decoration-green-500 underline-offset-4 transition-all">GAMES</a></li>
+                    <li><a href="#devlog" class="hover:text-white hover:underline decoration-green-500 underline-offset-4 transition-all">LOGS</a></li>
+                    <li><a href="#contact" class="hover:text-white hover:underline decoration-green-500 underline-offset-4 transition-all">CONTACT</a></li>
+                </ul>
             </div>
-            <p class="mt-6 text-xs text-teal-200/70">Tip: Press <span class="kbd">G</span> to toggle scanlines. Press <span class="kbd">S</span> for SFX.</p>
-          </div>
-          <div class="relative">
-            <div class="card p-4 rounded-lg">
-              <!-- Placeholder CRT-styled image -->
-              <svg viewBox="0 0 800 450" role="img" aria-label="CRT-styled hero art with neon grid and logo" class="w-full h-auto rounded">
-                <defs>
-                  <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#00ffd5" stop-opacity="0.3"/>
-                    <stop offset="100%" stop-color="#ff00a8" stop-opacity="0.4"/>
-                  </linearGradient>
-                </defs>
-                <rect width="800" height="450" fill="#0b0f1c"/>
-                <g opacity="0.4">
-                  <path d="M0 360 L800 360" stroke="#00ffd5" stroke-opacity="0.25"/>
-                  <path d="M0 320 L800 320" stroke="#00ffd5" stroke-opacity="0.2"/>
-                  <path d="M0 400 L800 400" stroke="#00ffd5" stroke-opacity="0.3"/>
-                  <path d="M0 280 L800 280" stroke="#00ffd5" stroke-opacity="0.15"/>
-                  <path d="M0 240 L800 240" stroke="#00ffd5" stroke-opacity="0.12"/>
-                  <path d="M0 200 L800 200" stroke="#00ffd5" stroke-opacity="0.1"/>
-                </g>
-                <text x="50%" y="52%" text-anchor="middle" font-family="'Press Start 2P', monospace" font-size="28" fill="#d1fae5">
-                  <tspan>SCOP</tspan><tspan dx="-3">I</tspan><tspan>CMED</tspan><tspan dx="-3">I</tspan><tspan>A</tspan>
-                </text>
-                <text x="50%" y="62%" text-anchor="middle" font-family="'Roboto Mono', monospace" font-size="18" fill="#93f5e6" opacity="0.8">Interactive Entertainment</text>
-                <rect x="40" y="40" width="720" height="370" fill="none" stroke="url(#g1)" stroke-width="2"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+        </nav>
 
-    <!-- Games / Projects -->
-    <section id="games" class="relative py-16 sm:py-20 border-t border-white/5 bg-gradient-to-b from-transparent to-black">
-      <div class="max-w-7xl mx-auto px-4">
-        <header class="mb-10">
-          <h2 class="pixel-font text-2xl sm:text-3xl text-teal-300">Projects & Games</h2>
-          <p class="mt-2 text-teal-100/80">One page per project with trailers, screenshots, and playable links.</p>
+        <!-- Hero Section -->
+        <header id="home" class="container mx-auto px-4 py-16 md:py-24 flex flex-col items-center text-center min-h-[70vh] justify-center relative">
+            <div class="absolute inset-0 border-x border-green-900/30 pointer-events-none mx-4 md:mx-12"></div>
+            
+            <div class="bg-green-900/20 px-4 py-1 rounded mb-6 border border-green-500/50 inline-block animate-pulse">
+                SYSTEM READY // V.2025.1
+            </div>
+            
+            <h1 class="text-4xl md:text-7xl mb-6 leading-tight text-glow text-white pixel-font glitch-hover cursor-default">
+                RETRO ROOTS.<br/>
+                <span class="text-green-400">FUTURE VISION.</span>
+            </h1>
+            
+            <p class="text-xl md:text-3xl max-w-2xl text-gray-300 mb-10 leading-relaxed">
+                Crafting immersive digital experiences with the soul of the 90s and the tech of tomorrow.
+            </p>
+
+            <div class="flex flex-col md:flex-row gap-6">
+                <a href="#games" class="pixel-font bg-green-600 hover:bg-green-500 text-black py-4 px-8 text-sm md:text-base transition-all hover:scale-105 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+                    BROWSE PROJECTS
+                </a>
+                <a href="#contact" class="pixel-font border-2 border-green-500 text-green-400 hover:text-white hover:border-white py-4 px-8 text-sm md:text-base transition-all hover:scale-105">
+                    INITIATE CONTACT
+                </a>
+            </div>
         </header>
 
-        <div class="grid md:grid-cols-2 gap-8">
-          <!-- HeroByte VTT -->
-          <article class="card rounded-lg overflow-hidden" itemscope itemtype="https://schema.org/VideoGame">
-            <div class="p-6">
-              <h3 class="pixel-font text-xl text-teal-200" itemprop="name">HeroByte VTT</h3>
-              <p class="mt-2 text-teal-100/80" itemprop="description">A web‑based Virtual Tabletop I'm building for fast, readable online sessions. Minimal chrome, clear grids, and tools that stay out of the GM's way.</p>
-              <ul class="mt-4 text-sm list-disc list-inside text-teal-100/80">
-                <li>Browser‑first, zero install</li>
-                <li>Grid, tokens, and fog‑of‑war focused</li>
-                <li>Built in TypeScript with React and Konva</li>
-              </ul>
+        <!-- Projects Section -->
+        <section id="games" class="border-t-2 border-green-900 bg-[#0a0a0a] py-20">
+            <div class="container mx-auto px-4">
+                <div class="flex items-center gap-4 mb-12">
+                    <div class="w-4 h-4 bg-green-500 animate-bounce"></div>
+                    <h2 class="text-3xl md:text-5xl text-white pixel-font">PROJECTS_</h2>
+                    <div class="h-1 bg-green-900 flex-grow"></div>
+                </div>
+
+                <!-- Game 1 -->
+                <article class="flex flex-col lg:flex-row gap-10 mb-24 group">
+                    <div class="w-full lg:w-1/2 relative border-4 border-gray-800 group-hover:border-green-500 transition-colors p-1">
+                        <!-- Placeholder for Game Image -->
+                        <div class="w-full aspect-video bg-slate-900 flex items-center justify-center overflow-hidden relative">
+                            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1642479755109-3a6b52b7ba68?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-60 grayscale group-hover:grayscale-0 transition-all duration-500"></div>
+                            <div class="absolute inset-0 bg-green-500/10"></div>
+                            <span class="relative z-10 text-6xl font-bold text-white/20 pixel-font">VTT</span>
+                        </div>
+                    </div>
+                    <div class="w-full lg:w-1/2 flex flex-col justify-center">
+                        <div class="flex items-baseline gap-4 mb-4">
+                            <h3 class="text-3xl md:text-4xl text-glow-cyan mb-2">HeroByte VTT</h3>
+                            <span class="bg-cyan-900/50 text-cyan-300 px-2 py-1 text-sm border border-cyan-500">ALPHA</span>
+                        </div>
+                        <p class="text-2xl text-gray-300 mb-6 leading-relaxed">
+                            System-agnostic virtual tabletop inspired by NES/SNES RPGs. Built for browser play with retro pixel menus, real-time sync, and peer-to-peer voice chat.
+                        </p>
+                        <ul class="mb-8 space-y-2 text-lg text-gray-400 font-mono">
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-500"></i> WebRTC Voice & Real-time Sync</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-500"></i> Role-based Code Splitting</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-500"></i> Konva-based Rendering</li>
+                        </ul>
+                        <div class="flex gap-4">
+                            <a href="https://github.com/loshunter/HeroByte" target="_blank" class="flex items-center gap-2 bg-transparent border border-cyan-500 text-cyan-400 px-6 py-3 hover:bg-cyan-500 hover:text-black transition-colors pixel-font text-sm">
+                                <i data-lucide="github"></i> GITHUB
+                            </a>
+                            <button class="flex items-center gap-2 text-gray-400 hover:text-white px-4 py-3">
+                                <i data-lucide="youtube"></i> TRAILER
+                            </button>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Game 2 -->
+                <article class="flex flex-col lg:flex-row-reverse gap-10 mb-12 group">
+                    <div class="w-full lg:w-1/2 relative border-4 border-gray-800 group-hover:border-purple-500 transition-colors p-1">
+                        <!-- Placeholder for Game Image -->
+                        <div class="w-full aspect-video bg-slate-900 flex items-center justify-center overflow-hidden relative">
+                            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1555864326-5cf22ef123cf?q=80&w=2067&auto=format&fit=crop')] bg-cover bg-center opacity-60 grayscale group-hover:grayscale-0 transition-all duration-500"></div>
+                             <div class="absolute inset-0 bg-purple-500/10"></div>
+                            <span class="relative z-10 text-6xl font-bold text-white/20 pixel-font">KART</span>
+                        </div>
+                    </div>
+                    <div class="w-full lg:w-1/2 flex flex-col justify-center text-left lg:text-right">
+                        <div class="flex items-baseline gap-4 mb-4 justify-start lg:justify-end">
+                             <span class="bg-purple-900/50 text-purple-300 px-2 py-1 text-sm border border-purple-500">PROTOTYPE</span>
+                            <h3 class="text-3xl md:text-4xl text-purple-400 text-glow mb-2">LowPolyKarter</h3>
+                        </div>
+                        <p class="text-2xl text-gray-300 mb-6 leading-relaxed">
+                            High-octane arcade racing with low-poly aesthetics. Drift through neon cityscapes and ancient ruins in this love letter to 90s kart racers.
+                        </p>
+                        <div class="flex gap-4 justify-start lg:justify-end">
+                            <a href="https://github.com/loshunter/LowPolyKarter" target="_blank" class="flex items-center gap-2 bg-transparent border border-purple-500 text-purple-400 px-6 py-3 hover:bg-purple-500 hover:text-black transition-colors pixel-font text-sm">
+                                <i data-lucide="github"></i> GITHUB
+                            </a>
+                        </div>
+                    </div>
+                </article>
             </div>
-            <div class="aspect-video bg-black flex items-center justify-center text-xs text-teal-200/60">
-              <span>Trailer coming later in development.</span>
+        </section>
+
+        <!-- Dev Blog Section -->
+        <section id="devlog" class="py-20 bg-[#050505]">
+            <div class="container mx-auto px-4">
+                <div class="flex items-center gap-4 mb-12 justify-center">
+                     <h2 class="text-3xl md:text-5xl text-white pixel-font">DEV_LOGS</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Post 1 -->
+                    <a href="#" class="block border border-green-900 bg-gray-900/50 p-6 hover:bg-green-900/20 hover:border-green-500 transition-all group">
+                        <div class="text-green-500 text-sm font-mono mb-2">NOV 18, 2025</div>
+                        <h4 class="text-2xl text-white mb-3 group-hover:text-green-400 pixel-font text-xs md:text-sm leading-relaxed">HEROBYTE: WEBRTC VOICE</h4>
+                        <p class="text-gray-400 text-lg">Implementing peer-to-peer audio using SimplePeer for lag-free comms...</p>
+                    </a>
+                    <!-- Post 2 -->
+                    <a href="#" class="block border border-green-900 bg-gray-900/50 p-6 hover:bg-green-900/20 hover:border-green-500 transition-all group">
+                        <div class="text-green-500 text-sm font-mono mb-2">OCT 02, 2025</div>
+                        <h4 class="text-2xl text-white mb-3 group-hover:text-green-400 pixel-font text-xs md:text-sm leading-relaxed">LOWPOLYKARTER DRIFT PHYSICS</h4>
+                        <p class="text-gray-400 text-lg">Tuning the tire grip variables to hit that sweet spot between sim and arcade...</p>
+                    </a>
+                    <!-- Post 3 -->
+                    <a href="#" class="block border border-green-900 bg-gray-900/50 p-6 hover:bg-green-900/20 hover:border-green-500 transition-all group">
+                        <div class="text-green-500 text-sm font-mono mb-2">SEP 15, 2025</div>
+                        <h4 class="text-2xl text-white mb-3 group-hover:text-green-400 pixel-font text-xs md:text-sm leading-relaxed">KONVA PERFORMANCE TUNING</h4>
+                        <p class="text-gray-400 text-lg">Optimizing the map rendering pipeline for HeroByte's canvas layer...</p>
+                    </a>
+                </div>
             </div>
-            <div class="p-6 flex flex-wrap gap-3 items-center">
-              <a href="https://github.com/loshunter/HeroByte" class="btn-neon px-4 py-2 rounded" target="_blank" rel="noopener">View on GitHub</a>
-              <span class="text-xs text-teal-200/60">Web VTT · Work in progress</span>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-20 border-t-2 border-green-900 bg-[#020202] relative overflow-hidden">
+             <!-- Grid Background -->
+             <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(#0f0 1px, transparent 1px), linear-gradient(90deg, #0f0 1px, transparent 1px); background-size: 40px 40px;"></div>
+
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="max-w-3xl mx-auto bg-gray-900/80 border border-green-600 p-8 md:p-12 shadow-[8px_8px_0px_0px_rgba(20,83,45,1)]">
+                    <h2 class="text-3xl md:text-4xl text-white pixel-font mb-8 text-center">CONNECT WITH US</h2>
+                    
+                    <form class="space-y-6" onsubmit="event.preventDefault(); alert('TRANSMISSION SENT SUCCESSFULLY.');">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-green-400 font-mono text-lg">USER_ID</label>
+                                <input type="text" class="w-full bg-black border border-green-700 text-green-400 p-3 font-mono focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400" placeholder="Name">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-green-400 font-mono text-lg">COMM_CHANNEL</label>
+                                <input type="email" class="w-full bg-black border border-green-700 text-green-400 p-3 font-mono focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400" placeholder="Email">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-green-400 font-mono text-lg">DATA_PACKET</label>
+                            <textarea rows="4" class="w-full bg-black border border-green-700 text-green-400 p-3 font-mono focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400" placeholder="Your message..."></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-500 text-black font-bold py-4 pixel-font text-sm transition-colors">
+                            SEND TRANSMISSION
+                        </button>
+                    </form>
+
+                    <div class="flex justify-center gap-8 mt-12">
+                        <a href="#" class="text-gray-500 hover:text-white transition-colors"><i data-lucide="twitter" class="w-8 h-8"></i></a>
+                        <a href="#" class="text-gray-500 hover:text-white transition-colors"><i data-lucide="github" class="w-8 h-8"></i></a>
+                        <a href="#" class="text-gray-500 hover:text-white transition-colors"><i data-lucide="instagram" class="w-8 h-8"></i></a>
+                        <a href="#" class="text-gray-500 hover:text-white transition-colors"><i data-lucide="gamepad" class="w-8 h-8"></i></a>
+                    </div>
+                </div>
             </div>
-            <meta itemprop="applicationCategory" content="Game" />
-            <link itemprop="url" href="https://scopicmedia.com/herobyte" />
-          </article>
+        </section>
 
-          <!-- Retro Kart Racer -->
-          <article class="card rounded-lg overflow-hidden" itemscope itemtype="https://schema.org/VideoGame">
-            <div class="p-6">
-              <h3 class="pixel-font text-xl text-teal-200" itemprop="name">Low Poly Kart Racer (WIP)</h3>
-              <p class="mt-2 text-teal-100/80" itemprop="description">An in‑development low‑poly kart racer with crunchy PS1‑era vibes. Think bright tracks, tight handling, and cozy chaos with friends.</p>
-              <ul class="mt-4 text-sm list-disc list-inside text-teal-100/80">
-                <li>Low‑poly, retro‑console aesthetic</li>
-                <li>Focused on satisfying drift & boost feel</li>
-                <li>Built in Unity as a small indie project</li>
-              </ul>
-            </div>
-            <div class="aspect-video bg-black flex items-center justify-center text-xs text-teal-200/60">
-              <span>Gameplay footage will live here once it's ready.</span>
-            </div>
-            <div class="p-6 flex flex-wrap gap-3 items-center">
-              <a href="https://github.com/loshunter/LowPolyKarter" class="btn-neon px-4 py-2 rounded" target="_blank" rel="noopener">Follow on GitHub</a>
-              <span class="text-xs text-teal-200/60">PC · Early prototyping</span>
-            </div>
-            <meta itemprop="applicationCategory" content="Game" />
-            <link itemprop="url" href="https://scopicmedia.com/turbopixel-kart" />
-          </article>
-        </div>
+        <footer class="py-8 bg-black text-center border-t border-green-900/50">
+            <p class="text-gray-600 font-mono">© 2025 SCOPIC MEDIA. ALL RIGHTS RESERVED.</p>
+            <p class="text-xs text-gray-800 mt-2">SIGNAL STRENGTH: 100%</p>
+        </footer>
+    </div>
 
-        <!-- Screens gallery (optional) -->
-        <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <figure class="card rounded p-3">
-            <img src="https://images.unsplash.com/photo-1542759564-7ccbb6b72a2d?q=80&w=1200&auto=format&fit=crop" alt="Low-poly desert racetrack at sunset" class="rounded" loading="lazy" />
-            <figcaption class="mt-2 text-xs text-teal-200/70">TurboPixel Kart – Sunset Circuit</figcaption>
-          </figure>
-          <figure class="card rounded p-3">
-            <img src="https://images.unsplash.com/photo-1556438064-2d7646166914?q=80&w=1200&auto=format&fit=crop" alt="Top-down table with dice and miniatures for HeroByte VTT" class="rounded" loading="lazy" />
-            <figcaption class="mt-2 text-xs text-teal-200/70">HeroByte VTT – Quick tools</figcaption>
-          </figure>
-          <figure class="card rounded p-3">
-            <img src="https://images.unsplash.com/photo-1520975922284-5f573dae5f7b?q=80&w=1200&auto=format&fit=crop" alt="Retro CRT with neon grid overlay" class="rounded" loading="lazy" />
-            <figcaption class="mt-2 text-xs text-teal-200/70">CRT mode – Scanlines & glow</figcaption>
-          </figure>
-        </div>
-      </div>
-    </section>
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
 
-    <!-- Blog / Devlog -->
-    <section id="blog" class="py-16 sm:py-20 border-t border-white/5">
-      <div class="max-w-7xl mx-auto px-4">
-        <header class="mb-8">
-          <h2 class="pixel-font text-2xl sm:text-3xl text-teal-300">Devlog</h2>
-          <p class="mt-2 text-teal-100/80">Short write‑ups, prototypes, and process notes as things evolve.</p>
-        </header>
-        <div class="grid md:grid-cols-2 gap-6">
-          <article class="card rounded p-5" itemscope itemtype="https://schema.org/BlogPosting">
-            <header>
-              <h3 class="font-bold text-teal-200" itemprop="headline">Starting HeroByte in Public</h3>
-              <time class="text-xs text-teal-200/60" datetime="2025-01-01" itemprop="datePublished">Devlog coming soon</time>
-            </header>
-            <p class="mt-3 text-sm text-teal-100/80" itemprop="description">Why I'm building my own VTT, what I want it to feel like at the table, and how the tech stack fits together.</p>
-            <a href="https://github.com/loshunter/HeroByte" class="btn-neon mt-4 inline-block px-3 py-2 rounded text-sm" target="_blank" rel="noopener" itemprop="url">Read notes on GitHub</a>
-          </article>
-          <article class="card rounded p-5" itemscope itemtype="https://schema.org/BlogPosting">
-            <header>
-              <h3 class="font-bold text-teal-200" itemprop="headline">Low Poly Kart Experiments</h3>
-              <time class="text-xs text-teal-200/60" datetime="2025-01-01" itemprop="datePublished">Devlog coming soon</time>
-            </header>
-            <p class="mt-3 text-sm text-teal-100/80" itemprop="description">Notes on drifting, retro rendering, and building a small kart game as a solo dev with a day job.</p>
-            <a href="https://github.com/loshunter/LowPolyKarter" class="btn-neon mt-4 inline-block px-3 py-2 rounded text-sm" target="_blank" rel="noopener" itemprop="url">Peek at the repo</a>
-          </article>
-        </div>
-      </div>
-    </section>
+        // Boot Sequence Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const bootScreen = document.getElementById('boot-screen');
+            const bootLogo = document.getElementById('boot-logo');
+            const bootTerminal = document.getElementById('boot-terminal');
+            const appContainer = document.getElementById('app-container');
 
-    <!-- About / Contact -->
-    <section id="about" class="py-16 sm:py-20 border-t border-white/5">
-      <div class="max-w-7xl mx-auto px-4">
-        <div class="grid lg:grid-cols-2 gap-10">
-          <div>
-            <h2 class="pixel-font text-2xl sm:text-3xl text-teal-300">About ScopicMedia</h2>
-            <p class="mt-4 text-teal-100/80">ScopicMedia is my one‑person game & media studio. I'm Hunter — a video editor, artist, internet generalist, and unapologetic AI enthusiast. I actively leverage modern AI coding tools such as OpenAI's ChatGPT (Codex/code‑assist) and Anthropic's Claude Code to accelerate development, prototype faster, and explore ideas that would take far longer on my own. I believe in being transparent about using AI as part of my workflow, not as a replacement for creativity but as a force multiplier that helps me build tools, prototypes, and games that feel like they fell out of a weird 90s future.</p>
-            <ul class="mt-4 grid sm:grid-cols-2 gap-2 text-sm text-teal-100/90">
-              <li>• Projects: HeroByte VTT & low‑poly kart racer</li>
-              <li>• Focus: readability, vibes, and feel</li>
-              <li>• Tech: TypeScript, React, Unity, WebGL</li>
-              <li>• Home base: scopicmedia.com portfolio</li>
-            </ul>
-            <div class="mt-6 flex gap-4">
-              <a href="https://twitter.com/scopicmedia" target="_blank" rel="noopener" class="btn-neon px-3 py-2 rounded" aria-label="X/Twitter">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M18 2H14L6 14h4l8-12zM6 10L2 22h4l4-12H6z" fill="#93f5e6"/></svg>
-              </a>
-              <a href="https://youtube.com/@scopicmedia" target="_blank" rel="noopener" class="btn-neon px-3 py-2 rounded" aria-label="YouTube">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M23 7s-.2-1.4-.8-2c-.8-.8-1.7-.8-2.2-.9C16.8 4 12 4 12 4h0s-4.8 0-8 .1c-.6 0-1.5.1-2.2.9-.6.6-.8 2-.8 2S0 8.6 0 10.2v1.6C0 13.4.2 15 .2 15s.2 1.4.8 2c.8.8 1.8.8 2.3.9 1.7.2 7.7.2 7.7.2s4.8 0 8-.1c.6 0 1.5-.1 2.2-.9.6-.6.8-2 .8-2s.2-1.6.2-3.2V10.2C23.2 8.6 23 7 23 7zM9 13.5V8.5l6 2.5-6 2.5z" fill="#93f5e6"/></svg>
-              </a>
-              <a href="https://itch.io/profile/scopicmedia" target="_blank" rel="noopener" class="btn-neon px-3 py-2 rounded" aria-label="Itch.io">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 6l3-2h12l3 2 1 4-6 8H8L2 10l1-4z" fill="#93f5e6"/></svg>
-              </a>
-            </div>
-          </div>
+            // Terminal Text Sequence
+            const lines = [
+                "Initializing BIOS...",
+                "Checking Memory... 64MB OK",
+                "Loading Video Drivers... OK",
+                "Mounting Filesystem... OK",
+                "Booting ScopicOS v1.0..."
+            ];
 
-          <div id="contact" class="card rounded p-6">
-            <h2 class="pixel-font text-xl text-teal-300">Contact</h2>
-            <p class="mt-2 text-teal-100/80">Want to collaborate, request a build, or say hi? Drop a line.</p>
-            <form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" class="mt-4 grid gap-3">
-              <input type="hidden" name="form-name" value="contact" />
-              <p class="hidden">
-                <label>Don’t fill this out if you’re human: <input name="bot-field" /></label>
-              </p>
-              <label class="grid gap-1 text-sm">
-                <span>Your name</span>
-                <input required name="name" class="px-3 py-2 rounded bg-black/40 border border-white/10 focus:border-teal-400 outline-none" />
-              </label>
-              <label class="grid gap-1 text-sm">
-                <span>Email</span>
-                <input required type="email" name="email" class="px-3 py-2 rounded bg-black/40 border border-white/10 focus:border-teal-400 outline-none" />
-              </label>
-              <label class="grid gap-1 text-sm">
-                <span>Message</span>
-                <textarea required name="message" rows="4" class="px-3 py-2 rounded bg-black/40 border border-white/10 focus:border-teal-400 outline-none"></textarea>
-              </label>
-              <div class="flex items-center gap-3">
-                <button type="submit" class="btn-neon px-4 py-2 rounded">Send</button>
-                <a href="mailto:catchall@scopicmedia.com" class="text-sm text-teal-200/80 underline underline-offset-4">catchall@scopicmedia.com</a>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </section>
+            let lineIndex = 0;
 
-    <!-- Footer -->
-    <footer class="border-t border-white/5 py-8">
-      <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p class="text-xs text-teal-200/70">© <span id="year"></span> ScopicMedia. All rights reserved.</p>
-        <p class="text-xs text-teal-200/70">Made with static HTML + progressive enhancement. <span class="hidden sm:inline">SEO-friendly and fast.</span></p>
-      </div>
-    </footer>
+            // 1. Fade in Logo
+            setTimeout(() => {
+                bootLogo.classList.remove('opacity-0');
+            }, 500);
 
-    <!-- Back to top -->
-    <button id="toTop" class="fixed bottom-5 right-5 opacity-0 pointer-events-none transition-all btn-neon px-3 py-2 rounded text-xs">Back to top</button>
-  </div>
+            // 2. Run Terminal Text
+            const typeLines = setInterval(() => {
+                if (lineIndex < lines.length) {
+                    const p = document.createElement('p');
+                    p.textContent = `> ${lines[lineIndex]}`;
+                    p.className = "mb-1";
+                    bootTerminal.appendChild(p);
+                    lineIndex++;
+                } else {
+                    clearInterval(typeLines);
+                    finishBoot();
+                }
+            }, 600); // Speed of text
 
-  <!-- Structured Data -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    "itemListElement": [
-      {
-        "@type": "VideoGame",
-        "name": "HeroByte VTT",
-        "applicationCategory": "Game",
-        "url": "https://github.com/loshunter/HeroByte"
-      },
-      {
-        "@type": "VideoGame",
-        "name": "Low Poly Kart Racer (WIP)",
-        "applicationCategory": "Game",
-        "url": "https://github.com/loshunter/LowPolyKarter"
-      }
-    ]
-  }
-  </script>
+            function finishBoot() {
+                setTimeout(() => {
+                    // Fade out boot screen
+                    bootScreen.style.transition = "opacity 0.5s";
+                    bootScreen.style.opacity = "0";
+                    
+                    setTimeout(() => {
+                        bootScreen.style.display = "none";
+                        
+                        // Show main app
+                        appContainer.style.display = "block";
+                        // Trigger CSS Reflow for transition
+                        void appContainer.offsetWidth; 
+                        
+                        // CRT Turn On Effect
+                        appContainer.style.animation = "turnOn 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards";
+                    }, 500);
 
-  <!-- Scripts -->
-  <script>
-    // Helpers
-    const $ = (sel, ctx=document) => ctx.querySelector(sel);
-    const $$ = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
-
-    // Year (guard against missing element)
-    const yearEl = $('#year');
-    if (yearEl) {
-      yearEl.textContent = new Date().getFullYear();
-    }
-
-    // Smooth scroll for in-page links
-    function smoothTo(target) {
-      const el = typeof target === 'string' ? document.getElementById(target.replace('#','')) : target;
-      if (!el) return;
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      // Move focus for accessibility
-      el.setAttribute('tabindex', '-1');
-      el.focus({ preventScroll: true });
-    }
-
-    $$('a[href^="#"]').forEach(a => {
-      a.addEventListener('click', e => {
-        const id = a.getAttribute('href');
-        if (!id || id === '#') return;
-        e.preventDefault();
-        smoothTo(id);
-        history.pushState(null, '', id);
-      });
-    });
-
-    // Active nav state via IntersectionObserver (guarded)
-    const sections = ['home','games','blog','about','contact']
-      .map(id => document.getElementById(id))
-      .filter(Boolean);
-
-    const navLinks = new Map(
-      $$('.nav-link').map(l => [l.getAttribute('href').replace('#',''), l])
-    );
-
-    if ('IntersectionObserver' in window) {
-      const io = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-          if (e.isIntersecting) {
-            navLinks.forEach(l => l.classList.remove('ring-1','ring-teal-400/70'));
-            const link = navLinks.get(e.target.id);
-            if (link) link.classList.add('ring-1','ring-teal-400/70');
-          }
+                }, 1000); // Wait a second after text finishes
+            }
         });
-      }, { threshold: 0.5 });
-
-      sections.forEach(s => io.observe(s));
-    }
-
-    // Back to top
-    const toTop = $('#toTop');
-    window.addEventListener('scroll', () => {
-      if (!toTop) return;
-      const show = window.scrollY > 800;
-      toTop.classList.toggle('opacity-100', show);
-      toTop.classList.toggle('opacity-0', !show);
-      toTop.classList.toggle('pointer-events-auto', show);
-      toTop.classList.toggle('pointer-events-none', !show);
-    });
-    if (toTop) {
-      toTop.addEventListener('click', () => window.scrollTo({ top:0, behavior:'smooth' }));
-    }
-
-    // CRT toggle with G
-    const app = $('#app');
-    function toggleCRT() { app && app.classList.toggle('crt'); }
-    document.addEventListener('keydown', (e) => {
-      if (e.key && e.key.toLowerCase() === 'g') { toggleCRT(); uiBeep(620, 0.03); }
-      if (e.key && e.key.toLowerCase() === 's') { toggleSfx(); }
-      if (e.key === 'Enter' && !bootHidden) { endBoot(); }
-    });
-    document.addEventListener('keyup', (e) => {
-      if (e.key === 'Enter' && !bootHidden) { endBoot(); }
-    });
-
-    // Simple UI SFX via WebAudio
-    let audioEnabled = false;
-    let audioCtx = null;
-
-    function initAudio() {
-      if (!audioCtx) {
-        const AC = window.AudioContext || window.webkitAudioContext;
-        if (!AC) return; // unsupported
-        audioCtx = new AC();
-      }
-      if (audioCtx && audioCtx.state === 'suspended' && audioCtx.resume) {
-        audioCtx.resume().catch(()=>{});
-      }
-    }
-    function resumeAudioIfNeeded() {
-      if (!audioCtx) initAudio(); else if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
-    }
-    function uiBeep(freq=880, dur=0.06, vol=0.04) {
-      if (!audioEnabled) return;
-      initAudio();
-      if (!audioCtx) return;
-      const t = audioCtx.currentTime;
-      const o = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      o.frequency.value = freq;
-      o.type = 'square';
-      g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(vol, t + 0.005);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      o.connect(g).connect(audioCtx.destination);
-      o.start(t);
-      o.stop(t + dur + 0.02);
-    }
-
-    const sfxBtn = $('#sfxToggle');
-    function refreshSfxLabel() {
-      if (sfxBtn) {
-        sfxBtn.textContent = `SFX: ${audioEnabled ? 'On' : 'Off'}`;
-        sfxBtn.setAttribute('aria-pressed', String(audioEnabled));
-      }
-      const bootToggle = $('#toggleSfxBoot');
-      if (bootToggle) {
-        bootToggle.setAttribute('aria-pressed', String(audioEnabled));
-        bootToggle.textContent = audioEnabled ? 'Disable Sounds' : 'Enable Sounds';
-      }
-    }
-    function toggleSfx(state) {
-      if (typeof state === 'boolean') audioEnabled = state; else audioEnabled = !audioEnabled;
-      if (audioEnabled) resumeAudioIfNeeded();
-      try {
-        localStorage.setItem('scopicmedia-sfx', audioEnabled ? '1' : '0');
-      } catch (_) {}
-      refreshSfxLabel();
-      if (audioEnabled) {
-        // Audible chime to confirm
-        uiBeep(660, 0.06, 0.06);
-        setTimeout(() => uiBeep(880, 0.06, 0.06), 80);
-        setTimeout(() => uiBeep(1320, 0.06, 0.05), 160);
-      } else {
-        uiBeep(300, 0.05, 0.05);
-      }
-    }
-
-    if (sfxBtn) {
-      sfxBtn.addEventListener('click', () => toggleSfx());
-    }
-    $$('.btn-neon, .btn-secondary, .nav-link').forEach(el => {
-      el.addEventListener('mouseenter', () => uiBeep(880, 0.03, 0.02));
-      el.addEventListener('click', () => uiBeep(320, 0.06, 0.05));
-    });
-
-    // Ensure audio context resumes on first interaction
-    document.addEventListener('pointerdown', resumeAudioIfNeeded, { passive: true });
-
-    // Persist SFX preference
-    try {
-      const saved = localStorage.getItem('scopicmedia-sfx');
-      if (saved) audioEnabled = saved === '1';
-    } catch (_) {}
-    refreshSfxLabel();
-
-    // Boot flow
-    const boot = $('#boot');
-    let bootHidden = false;
-    function endBoot() {
-      if (bootHidden || !boot) return;
-      bootHidden = true;
-      boot.style.transition = 'opacity .6s ease, filter .6s ease';
-      boot.style.opacity = '0';
-      boot.style.filter = 'blur(3px)';
-      setTimeout(() => {
-        boot.remove();
-      }, 650);
-      uiBeep(220, 0.08, 0.06);
-      setTimeout(() => uiBeep(440, 0.08, 0.06), 60);
-      setTimeout(() => uiBeep(880, 0.08, 0.06), 120);
-    }
-
-    // Make entire boot screen clickable to continue
-    if (boot) {
-      boot.addEventListener('click', () => {
-        endBoot();
-      });
-    }
-
-    const skipIntroBtn = $('#skipIntro');
-    if (skipIntroBtn) {
-      skipIntroBtn.addEventListener('click', (e) => { e.stopPropagation(); endBoot(); });
-    }
-
-    const toggleSfxBootBtn = $('#toggleSfxBoot');
-    if (toggleSfxBootBtn) {
-      toggleSfxBootBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleSfx(); });
-    }
-
-    // Auto-end boot after delay (respects reduced-motion as shorter) with failsafe
-    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    setTimeout(endBoot, prefersReducedMotion ? 800 : 2600);
-    setTimeout(() => { if (!bootHidden) endBoot(); }, 6000);
-
-    // If hash present on load, scroll to it after boot
-    window.addEventListener('load', () => {
-      const hash = location.hash;
-      if (hash) {
-        // defer until boot ends
-        setTimeout(() => smoothTo(hash), 900);
-      }
-    });
-  </script>
+    </script>
 </body>
 </html>
