@@ -161,6 +161,27 @@
             80% { transform: skew(5deg); }
             100% { transform: skew(0deg); }
         }
+
+        @keyframes crtWarmup {
+            0% { transform: scaleY(0.05) scaleX(0.2); opacity: 0; filter: brightness(6); }
+            40% { opacity: 1; transform: scaleY(0.1) scaleX(0.6); }
+            70% { transform: scaleY(1.05) scaleX(1); }
+            100% { transform: scaleY(1) scaleX(1); opacity: 1; filter: brightness(1); }
+        }
+
+        @keyframes rgbGlitch {
+            0% { filter: drop-shadow(-6px 0 rgba(255,0,128,0.5)) drop-shadow(6px 0 rgba(0,255,255,0.5)); transform: translateX(-2px); }
+            50% { filter: drop-shadow(6px 0 rgba(255,0,128,0.3)) drop-shadow(-6px 0 rgba(0,255,255,0.3)); transform: translateX(2px); }
+            100% { filter: drop-shadow(0 0 rgba(255,0,0,0)); transform: translateX(0); }
+        }
+
+        @keyframes letterFlicker {
+            0% { opacity: 0.1; }
+            25% { opacity: 1; }
+            50% { opacity: 0.2; }
+            75% { opacity: 1; }
+            100% { opacity: 0.4; }
+        }
         
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
@@ -170,6 +191,118 @@
         ::-webkit-scrollbar-thumb {
             background: #333;
             border: 1px solid var(--phosphor-primary);
+        }
+
+        /* --- BOOT SCREEN --- */
+        #boot-screen {
+            background: radial-gradient(circle, #050505 0%, #000000 80%);
+            letter-spacing: 0.05em;
+            overflow: hidden;
+            transition: opacity 0.8s ease;
+        }
+
+        #boot-screen.boot-screen--fade {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .boot-logo-shell {
+            width: min(90vw, 480px);
+            overflow: hidden;
+        }
+
+        #boot-logo {
+            opacity: 0;
+            transform-origin: center;
+            transform: scaleY(0.05) scaleX(0.4);
+            filter: brightness(4) saturate(0.4);
+            transition: filter 0.4s ease;
+        }
+
+        #boot-logo.boot-logo--warmup {
+            animation: crtWarmup 1.2s ease-out forwards;
+        }
+
+        #boot-logo.boot-logo--glitch {
+            animation: rgbGlitch 0.45s steps(2, end);
+        }
+
+        #boot-logo.boot-logo--bloom {
+            filter: drop-shadow(0 0 16px var(--phosphor-primary)) drop-shadow(0 0 32px rgba(51,255,0,0.35));
+        }
+
+        .boot-logo-core {
+            box-shadow: inset 0 0 12px rgba(255,255,255,0.35);
+        }
+
+        .boot-letter {
+            display: inline-block;
+            transition: color 0.2s ease, text-shadow 0.2s ease;
+            opacity: 0.7;
+        }
+
+        .boot-letter.boot-letter--flicker {
+            animation: letterFlicker 0.3s linear 2;
+        }
+
+        .boot-letter.boot-letter--active {
+            opacity: 1;
+            color: #f0fdf4;
+            text-shadow: 0 0 6px rgba(255,255,255,0.4), 0 0 12px rgba(51,255,0,0.6);
+        }
+
+        #boot-terminal {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(51, 255, 0, 0.2);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 0, 0, 0.8);
+            padding: 1.5rem;
+            min-height: 8rem;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .boot-terminal-line {
+            font-size: 1.1rem;
+            color: #86efac;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+        }
+
+        .boot-terminal-line.warn {
+            color: #fbbf24;
+        }
+
+        .boot-terminal-line.resolve {
+            color: #7dd3fc;
+        }
+
+        .boot-progress {
+            width: 100%;
+            max-width: 32rem;
+        }
+
+        .boot-progress-bar {
+            display: flex;
+            gap: 0.35rem;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(51, 255, 0, 0.3);
+            padding: 0.6rem;
+            box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8);
+        }
+
+        .progress-block {
+            flex: 1;
+            height: 18px;
+            border: 1px solid rgba(51, 255, 0, 0.2);
+            background: rgba(10, 25, 10, 0.4);
+            opacity: 0.25;
+            transition: background 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+        }
+
+        .progress-block.filled {
+            background: var(--phosphor-primary);
+            box-shadow: 0 0 12px rgba(51, 255, 0, 0.9);
+            opacity: 1;
         }
     </style>
 </head>
@@ -182,16 +315,27 @@
     <div class="vignette"></div>
 
     <!-- BOOT SEQUENCE -->
-    <div id="boot-screen" class="fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center text-center p-4">
-        <div id="boot-logo" class="opacity-0 transition-opacity duration-1000 mb-8">
-            <div class="w-24 h-24 border-4 border-white rotate-45 mx-auto mb-4 flex items-center justify-center">
-                <div class="w-16 h-16 bg-white rotate-90"></div>
+    <div id="boot-screen" class="fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center text-center p-4 gap-6">
+        <div class="boot-logo-shell mb-4">
+            <div id="boot-logo">
+                <div class="w-24 h-24 border-4 border-white rotate-45 mx-auto mb-4 flex items-center justify-center boot-logo-core">
+                    <div class="w-16 h-16 bg-white rotate-90"></div>
+                </div>
+                <h1 class="text-4xl md:text-6xl text-white tracking-widest font-bold pixel-font">
+                    <span class="boot-letter">S</span><span class="boot-letter">C</span><span class="boot-letter">O</span><span class="boot-letter">P</span><span class="boot-letter">I</span><span class="boot-letter">C</span>
+                </h1>
+                <h2 class="text-xl md:text-2xl text-yellow-400 tracking-widest mt-2 pixel-font">MEDIA</h2>
             </div>
-            <h1 class="text-4xl md:text-6xl text-white tracking-widest font-bold pixel-font">SCOPIC</h1>
-            <h2 class="text-xl md:text-2xl text-yellow-400 tracking-widest mt-2 pixel-font">MEDIA</h2>
         </div>
-        <div id="boot-terminal" class="text-left w-full max-w-2xl font-mono text-lg text-gray-400 mt-12 h-32">
-            <!-- JS will type here -->
+        <div id="boot-terminal" class="w-full max-w-2xl font-mono text-left">
+            <!-- Dynamic logs -->
+        </div>
+        <div class="boot-progress font-mono text-left">
+            <div class="flex justify-between text-green-400 text-sm tracking-wide mb-2">
+                <span>CALIBRATING SIGNAL</span>
+                <span id="progress-percent">00%</span>
+            </div>
+            <div id="boot-progress-bar" class="boot-progress-bar"></div>
         </div>
     </div>
 
@@ -399,63 +543,114 @@
         // Initialize Lucide Icons
         lucide.createIcons();
 
-        // Boot Sequence Logic
+        // Boot Sequence Enhancements
         document.addEventListener('DOMContentLoaded', () => {
             const bootScreen = document.getElementById('boot-screen');
             const bootLogo = document.getElementById('boot-logo');
+            const bootLetters = document.querySelectorAll('.boot-letter');
             const bootTerminal = document.getElementById('boot-terminal');
             const appContainer = document.getElementById('app-container');
+            const progressBar = document.getElementById('boot-progress-bar');
+            const progressPercent = document.getElementById('progress-percent');
 
-            // Terminal Text Sequence
-            const lines = [
-                "Initializing BIOS...",
-                "Checking Memory... 64MB OK",
-                "Loading Video Drivers... OK",
-                "Mounting Filesystem... OK",
-                "Booting ScopicOS v1.0..."
+            const TOTAL_BLOCKS = 20;
+            const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();
+            const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+            const terminalLines = [
+                { text: "Initializing Retro-BIOS v2.1... AUTHORIZED" },
+                { text: "Mapping VRAM apertures... FOUND 4096KB" },
+                { text: "Scanning PCI bus for nostalgia GPUs... VOODOO5 LOCKED" },
+                { text: "Warning: Sarcasm module uncalibrated.", type: "warn", resolution: "Auto-tuning dad-joke drivers... OK" },
+                { text: "Mounting /dev/cartridge ... OK" },
+                { text: "Checksum HERO_BYTE.KRN ... PASS" },
+                { text: "Warning: Coffee warmer offline.", type: "warn", resolution: "Routing spare GPU heat... BARISTA MODE ENABLED" },
+                { text: "Booting ScopicOS v1.0 ... ENGAGE" }
             ];
 
-            let lineIndex = 0;
+            const progressBlocks = Array.from({ length: TOTAL_BLOCKS }, () => {
+                const block = document.createElement('span');
+                block.className = 'progress-block';
+                progressBar.appendChild(block);
+                return block;
+            });
 
-            // 1. Fade in Logo
-            setTimeout(() => {
-                bootLogo.classList.remove('opacity-0');
-            }, 500);
+            const typeLine = async ({ text, type }) => {
+                const line = document.createElement('div');
+                line.className = `boot-terminal-line ${type ?? ''}`;
+                bootTerminal.appendChild(line);
+                const content = `> ${text}`;
 
-            // 2. Run Terminal Text
-            const typeLines = setInterval(() => {
-                if (lineIndex < lines.length) {
-                    const p = document.createElement('p');
-                    p.textContent = `> ${lines[lineIndex]}`;
-                    p.className = "mb-1";
-                    bootTerminal.appendChild(p);
-                    lineIndex++;
-                } else {
-                    clearInterval(typeLines);
-                    finishBoot();
+                for (const char of content) {
+                    line.textContent += char;
+                    bootTerminal.scrollTop = bootTerminal.scrollHeight;
+                    await wait(12 + Math.random() * 35);
                 }
-            }, 600); // Speed of text
+            };
 
-            function finishBoot() {
-                setTimeout(() => {
-                    // Fade out boot screen
-                    bootScreen.style.transition = "opacity 0.5s";
-                    bootScreen.style.opacity = "0";
-                    
-                    setTimeout(() => {
-                        bootScreen.style.display = "none";
-                        
-                        // Show main app
-                        appContainer.style.display = "block";
-                        // Trigger CSS Reflow for transition
-                        void appContainer.offsetWidth; 
-                        
-                        // CRT Turn On Effect
-                        appContainer.style.animation = "turnOn 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards";
-                    }, 500);
+            const runTerminal = async () => {
+                for (const entry of terminalLines) {
+                    await wait(150 + Math.random() * 420);
+                    await typeLine(entry);
+                    if (entry.resolution) {
+                        await wait(120 + Math.random() * 240);
+                        await typeLine({ text: entry.resolution, type: 'resolve' });
+                    }
+                }
+            };
 
-                }, 1000); // Wait a second after text finishes
-            }
+            const animateProgressBar = async () => {
+                for (let i = 0; i < progressBlocks.length; i++) {
+                    if (i === progressBlocks.length - 1) {
+                        await fontsReady;
+                        await wait(200);
+                    } else {
+                        await wait(120 + Math.random() * 240);
+                    }
+                    progressBlocks[i].classList.add('filled');
+                    const percent = Math.min(100, Math.round(((i + 1) / TOTAL_BLOCKS) * 100));
+                    progressPercent.textContent = `${percent.toString().padStart(2, '0')}%`;
+                }
+            };
+
+            const warmupLogo = async () => {
+                bootLogo.classList.add('boot-logo--warmup');
+                await wait(1200);
+                bootLogo.classList.add('boot-logo--glitch');
+                setTimeout(() => bootLogo.classList.remove('boot-logo--glitch'), 450);
+            };
+
+            const flickerLetters = async () => {
+                for (const letter of bootLetters) {
+                    letter.classList.add('boot-letter--flicker');
+                    await wait(80 + Math.random() * 110);
+                    letter.classList.remove('boot-letter--flicker');
+                    letter.classList.add('boot-letter--active');
+                }
+            };
+
+            const revealApp = async () => {
+                bootScreen.classList.add('boot-screen--fade');
+                await wait(800);
+                bootScreen.style.display = 'none';
+                appContainer.classList.remove('hidden-content');
+                appContainer.style.display = 'block';
+                appContainer.style.opacity = '1';
+                requestAnimationFrame(() => {
+                    appContainer.style.animation = "turnOn 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards";
+                });
+            };
+
+            const runBootSequence = async () => {
+                await warmupLogo();
+                await Promise.all([runTerminal(), animateProgressBar()]);
+                await flickerLetters();
+                bootLogo.classList.add('boot-logo--bloom');
+                await wait(600);
+                await revealApp();
+            };
+
+            runBootSequence();
         });
     </script>
 </body>
