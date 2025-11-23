@@ -422,35 +422,15 @@
                     <div class="h-1 w-24 bg-phosphor mx-auto"></div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Post Card -->
-                    <a href="#" class="block bg-[#0e0e0e] border border-gray-800 p-6 hover:border-phosphor hover:-translate-y-1 transition-all group">
-                        <div class="flex justify-between items-center mb-4 text-sm text-gray-500 font-mono">
-                            <span>// NOV 18</span>
-                            <span class="text-phosphor">NETWORKING</span>
-                        </div>
-                        <h4 class="text-xl text-white mb-2 group-hover:text-phosphor font-bold leading-tight">WebRTC Voice Implementation</h4>
-                        <p class="text-gray-400 text-lg leading-snug">Using SimplePeer for lag-free comms in the browser...</p>
-                    </a>
-                    
-                    <a href="#" class="block bg-[#0e0e0e] border border-gray-800 p-6 hover:border-purple-500 hover:-translate-y-1 transition-all group">
-                        <div class="flex justify-between items-center mb-4 text-sm text-gray-500 font-mono">
-                            <span>// OCT 02</span>
-                            <span class="text-purple-400">PHYSICS</span>
-                        </div>
-                        <h4 class="text-xl text-white mb-2 group-hover:text-purple-400 font-bold leading-tight">Drift Mechanics Tuning</h4>
-                        <p class="text-gray-400 text-lg leading-snug">Finding the sweet spot between arcade slide and simulation grip...</p>
-                    </a>
-
-                    <a href="#" class="block bg-[#0e0e0e] border border-gray-800 p-6 hover:border-cyber hover:-translate-y-1 transition-all group">
-                        <div class="flex justify-between items-center mb-4 text-sm text-gray-500 font-mono">
-                            <span>// SEP 15</span>
-                            <span class="text-cyber">OPTIMIZATION</span>
-                        </div>
-                        <h4 class="text-xl text-white mb-2 group-hover:text-cyber font-bold leading-tight">Konva Canvas Layers</h4>
-                        <p class="text-gray-400 text-lg leading-snug">Reducing draw calls on the main map render pipeline...</p>
-                    </a>
+                <div id="devlog-feed" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-[#0e0e0e] border border-gray-800 p-6 animate-pulse">
+                        <div class="h-4 bg-gray-700/40 w-1/3 mb-4"></div>
+                        <div class="h-6 bg-gray-600/40 w-2/3 mb-3"></div>
+                        <div class="h-4 bg-gray-700/30 w-full mb-1"></div>
+                        <div class="h-4 bg-gray-700/30 w-5/6"></div>
+                    </div>
                 </div>
+                <p id="devlog-error" class="text-center text-sm text-gray-500 mt-6 hidden">Unable to load latest GitHub activity. Try refreshing soon.</p>
             </div>
         </section>
 
@@ -519,6 +499,9 @@
             { text: "ACCESS GRANTED.", color: "text-phosphor", delay: 300 }
         ];
 
+        const DEVLOG_USER = 'LosHunter';
+        const DEVLOG_LIMIT = 3;
+
         // Store element references immediately when DOM is safe
         let elements = {};
         let lightbox = {};
@@ -553,6 +536,100 @@
                 line.textContent = `> ${text}`;
             }
         }
+
+        const escapeHTML = (str = '') => str.replace(/[&<>"']/g, (char) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[char] || char));
+
+        const formatDateLabel = (isoString) => {
+            const date = new Date(isoString);
+            if (Number.isNaN(date.getTime())) return '-- --';
+            return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit' }).toUpperCase();
+        };
+
+        const describeEvent = (event) => {
+            const type = event.type;
+            const payload = event.payload || {};
+            switch (type) {
+                case 'PushEvent': {
+                    const commits = payload.commits || [];
+                    const count = commits.length;
+                    const branch = (payload.ref || '').split('/').pop() || 'main';
+                    const latest = commits.length ? commits[commits.length - 1].message : '';
+                    return `${count} commit${count === 1 ? '' : 's'} pushed to ${branch}${latest ? ` — ${latest}` : ''}`;
+                }
+                case 'PullRequestEvent':
+                    return `PR ${payload.action ?? 'updated'} • #${payload.number}`;
+                case 'IssuesEvent':
+                    return `Issue ${payload.action ?? 'updated'} • #${payload.issue?.number ?? ''}`;
+                case 'CreateEvent':
+                    return `Created ${payload.ref_type} ${payload.ref || ''}`.trim();
+                case 'WatchEvent':
+                    return 'Starred repository';
+                case 'ReleaseEvent':
+                    return `Release ${payload.action ?? 'published'} • ${payload.release?.name ?? ''}`;
+                default:
+                    return `Performed ${type}`;
+            }
+        };
+
+        const createDevlogCard = (event) => {
+            const card = document.createElement('a');
+            card.href = event.repo ? `https://github.com/${event.repo.name}` : '#';
+            card.target = '_blank';
+            card.rel = 'noopener noreferrer';
+            card.className = 'block bg-[#0e0e0e] border border-gray-800 p-6 hover:border-phosphor hover:-translate-y-1 transition-all group';
+
+            const repoLabel = event.repo?.name?.split('/')?.pop()?.toUpperCase() || 'ACTIVITY';
+            const typeLabel = event.type?.replace('Event', '').toUpperCase();
+            const dateLabel = formatDateLabel(event.created_at);
+            const description = describeEvent(event);
+
+            card.innerHTML = `
+                <div class="flex justify-between items-center mb-4 text-sm text-gray-500 font-mono">
+                    <span>// ${escapeHTML(dateLabel)}</span>
+                    <span class="text-phosphor">${escapeHTML(repoLabel)}</span>
+                </div>
+                <h4 class="text-xl text-white mb-2 group-hover:text-phosphor font-bold leading-tight">${escapeHTML(typeLabel)}</h4>
+                <p class="text-gray-400 text-lg leading-snug">${escapeHTML(description)}</p>
+            `;
+
+            return card;
+        };
+
+        const loadDevLogs = async () => {
+            const feed = document.getElementById('devlog-feed');
+            const errorEl = document.getElementById('devlog-error');
+            if(!feed) return;
+
+            const showError = () => {
+                if(errorEl) errorEl.classList.remove('hidden');
+            };
+
+            try {
+                const response = await fetch(`https://api.github.com/users/${DEVLOG_USER}/events/public`);
+                if(!response.ok) throw new Error('GitHub request failed');
+                const events = await response.json();
+                const latest = (events || []).filter(evt => evt.repo).slice(0, DEVLOG_LIMIT);
+
+                feed.innerHTML = '';
+                if(!latest.length) {
+                    feed.innerHTML = '<div class="bg-[#0e0e0e] border border-gray-800 p-6 text-gray-400 text-center">No public GitHub activity detected.</div>';
+                    return;
+                }
+
+                latest.forEach(event => {
+                    feed.appendChild(createDevlogCard(event));
+                });
+            } catch (err) {
+                console.error('Failed to load GitHub events', err);
+                showError();
+            }
+        };
 
         // Boot Sequence Logic
         async function runBootSequence() {
@@ -700,6 +777,8 @@
             Promise.race([fontCheck, safetyTimeout]).then(() => {
                 runBootSequence();
             });
+
+            loadDevLogs();
         });
 
     </script>
