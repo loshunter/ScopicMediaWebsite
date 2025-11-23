@@ -174,11 +174,9 @@
         }
 
         /* --- BOOT SCREEN SPECIFICS --- */
+        /* Changed: Removed boot-hidden logic here to ensure visibility by default */
         .boot-visible {
             display: flex;
-        }
-        .boot-hidden {
-            display: none;
         }
         
         .placeholder-pattern {
@@ -186,6 +184,12 @@
             background-image: radial-gradient(#222 15%, transparent 16%), radial-gradient(#222 15%, transparent 16%);
             background-size: 10px 10px;
             background-position: 0 0, 5px 5px;
+        }
+        
+        /* Fallback: Ensure app is hidden initially via CSS, JS will reveal */
+        .app-hidden {
+            opacity: 0;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -199,7 +203,8 @@
     </div>
 
     <!-- BOOT SEQUENCE (ID: boot-screen) -->
-    <div id="boot-screen" class="fixed inset-0 bg-black z-[100] flex-col items-center justify-center p-4 gap-6 font-mono boot-hidden">
+    <!-- FIX: Removed 'boot-hidden' class. It is now visible by default. JS will hide it. -->
+    <div id="boot-screen" class="fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center p-4 gap-6 font-mono">
         
         <!-- Boot Logo -->
         <div class="mb-8 text-center relative">
@@ -215,6 +220,7 @@
         <!-- Terminal Logs -->
         <div id="boot-terminal" class="w-full max-w-2xl h-48 overflow-y-auto font-mono text-left bg-black/80 border border-phosphor/30 p-4 shadow-inner text-lg leading-snug scrollbar-hide">
             <!-- Dynamic logs inserted here via JS -->
+            <div class="text-gray-500">> System Power On...</div>
         </div>
 
         <!-- Progress Bar -->
@@ -234,7 +240,7 @@
     </div>
 
     <!-- MAIN APP CONTENT -->
-    <div id="app-container" class="opacity-0 transition-opacity duration-1000">
+    <div id="app-container" class="app-hidden transition-opacity duration-1000">
         
         <!-- Navigation -->
         <nav class="fixed top-0 w-full z-50 bg-black/90 border-b border-phosphor/30 backdrop-blur-md">
@@ -367,3 +373,260 @@
                             </div>
                             <!-- Placeholder content -->
                             <div class="absolute inset-0 grid grid-cols-2 gap-1 p-1">
+                                <div class="bg-black/50 border border-purple-500/30"></div>
+                                <div class="bg-black/50 border border-purple-500/30"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full lg:w-1/2 flex flex-col justify-center text-left lg:text-right">
+                        <div class="flex items-center gap-4 mb-4 justify-start lg:justify-end">
+                            <span class="bg-purple-900/30 text-purple-400 border border-purple-500 px-2 py-0.5 text-xs">PROTOTYPE</span>
+                            <h3 class="text-4xl md:text-5xl text-purple-400 text-shadow-purple font-display">PolyKarter</h3>
+                        </div>
+                        <p class="text-xl text-gray-300 mb-8 leading-relaxed border-r-0 lg:border-r-2 border-gray-700 pr-0 lg:pr-4">
+                            High-octane arcade racing. Drift through neon cityscapes and ancient ruins in this love letter to 90s kart racers with a low-poly aesthetic.
+                        </p>
+                        <div class="flex gap-4 justify-start lg:justify-end">
+                            <button class="bg-transparent border border-purple-500 text-purple-400 px-6 py-3 hover:bg-purple-500 hover:text-white transition-colors font-display text-xs flex items-center gap-2">
+                                <i data-lucide="github" class="w-4 h-4"></i> REPO
+                            </button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- Dev Blog (Grid) -->
+        <section id="devlog" class="py-20 bg-black">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-5xl text-white font-display mb-2">DEV_LOGS</h2>
+                    <div class="h-1 w-24 bg-phosphor mx-auto"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Post Card -->
+                    <a href="#" class="block bg-[#0e0e0e] border border-gray-800 p-6 hover:border-phosphor hover:-translate-y-1 transition-all group">
+                        <div class="flex justify-between items-center mb-4 text-sm text-gray-500 font-mono">
+                            <span>// NOV 18</span>
+                            <span class="text-phosphor">NETWORKING</span>
+                        </div>
+                        <h4 class="text-xl text-white mb-2 group-hover:text-phosphor font-bold leading-tight">WebRTC Voice Implementation</h4>
+                        <p class="text-gray-400 text-lg leading-snug">Using SimplePeer for lag-free comms in the browser...</p>
+                    </a>
+                    
+                    <a href="#" class="block bg-[#0e0e0e] border border-gray-800 p-6 hover:border-purple-500 hover:-translate-y-1 transition-all group">
+                        <div class="flex justify-between items-center mb-4 text-sm text-gray-500 font-mono">
+                            <span>// OCT 02</span>
+                            <span class="text-purple-400">PHYSICS</span>
+                        </div>
+                        <h4 class="text-xl text-white mb-2 group-hover:text-purple-400 font-bold leading-tight">Drift Mechanics Tuning</h4>
+                        <p class="text-gray-400 text-lg leading-snug">Finding the sweet spot between arcade slide and simulation grip...</p>
+                    </a>
+
+                    <a href="#" class="block bg-[#0e0e0e] border border-gray-800 p-6 hover:border-cyber hover:-translate-y-1 transition-all group">
+                        <div class="flex justify-between items-center mb-4 text-sm text-gray-500 font-mono">
+                            <span>// SEP 15</span>
+                            <span class="text-cyber">OPTIMIZATION</span>
+                        </div>
+                        <h4 class="text-xl text-white mb-2 group-hover:text-cyber font-bold leading-tight">Konva Canvas Layers</h4>
+                        <p class="text-gray-400 text-lg leading-snug">Reducing draw calls on the main map render pipeline...</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact -->
+        <section id="contact" class="py-20 border-t border-phosphor/30 bg-[#020202] relative overflow-hidden">
+             <div class="absolute inset-0 opacity-5" style="background-image: linear-gradient(#33ff00 1px, transparent 1px), linear-gradient(90deg, #33ff00 1px, transparent 1px); background-size: 20px 20px;"></div>
+
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="max-w-2xl mx-auto bg-black/90 border border-green-800 p-8 shadow-[8px_8px_0px_0px_rgba(20,83,45,0.5)]">
+                    <h2 class="text-3xl font-display text-white mb-8 text-center border-b border-gray-800 pb-4">
+                        <span class="text-phosphor">></span> TRANSMIT_DATA
+                    </h2>
+                    
+                    <form class="space-y-6" onsubmit="event.preventDefault(); this.reset(); alert('TRANSMISSION SENT // AWAIT RESPONSE');">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-phosphor text-lg block">USER_ID</label>
+                                <input type="text" required class="w-full bg-black border border-gray-700 text-white p-3 focus:outline-none focus:border-phosphor focus:ring-1 focus:ring-phosphor transition-all" placeholder="Enter Name">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-phosphor text-lg block">COMM_LINK</label>
+                                <input type="email" required class="w-full bg-black border border-gray-700 text-white p-3 focus:outline-none focus:border-phosphor focus:ring-1 focus:ring-phosphor transition-all" placeholder="Enter Email">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-phosphor text-lg block">PACKET_DATA</label>
+                            <textarea rows="4" required class="w-full bg-black border border-gray-700 text-white p-3 focus:outline-none focus:border-phosphor focus:ring-1 focus:ring-phosphor transition-all" placeholder="Message content..."></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-phosphor hover:bg-phosphor-bright text-black font-bold py-4 font-display text-sm transition-colors uppercase tracking-wider">
+                            Send Transmission
+                        </button>
+                    </form>
+
+                    <div class="flex justify-center gap-8 mt-12 pt-8 border-t border-gray-800">
+                        <a href="#" class="text-gray-500 hover:text-white hover:scale-110 transition-all"><i data-lucide="twitter" class="w-6 h-6"></i></a>
+                        <a href="#" class="text-gray-500 hover:text-white hover:scale-110 transition-all"><i data-lucide="github" class="w-6 h-6"></i></a>
+                        <a href="#" class="text-gray-500 hover:text-white hover:scale-110 transition-all"><i data-lucide="instagram" class="w-6 h-6"></i></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="py-6 bg-black text-center border-t border-gray-900">
+            <p class="text-gray-600 text-sm">© 2025 SCOPIC MEDIA. ALL RIGHTS RESERVED.</p>
+            <p class="text-xs text-gray-800 mt-1">SIGNAL: 100% // ENCRYPTION: NONE</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- CONSTANTS & STATE ---
+        const TERMINAL_LINES = [
+            { text: "Initializing BIOS v2.1...", delay: 200 },
+            { text: "Loading Texture Cache... 4096KB OK", delay: 150 },
+            { text: "Mounting Virtual Cartridge...", delay: 400 },
+            { text: "Checking Audio Drivers... SYNTHWAVE.DRV", delay: 200 },
+            { text: "Connecting to Grid...", delay: 500 },
+            { text: "ACCESS GRANTED.", color: "text-phosphor", delay: 300 }
+        ];
+
+        // Store element references immediately when DOM is safe
+        let elements = {};
+
+        // --- FUNCTIONS ---
+
+        // Reveal Main App (End of Boot)
+        function showApp() {
+            if(!elements.bootScreen || !elements.appContainer) return;
+            
+            elements.bootScreen.style.display = 'none';
+            elements.appContainer.classList.remove('app-hidden');
+            
+            // Mark session as booted
+            try {
+                sessionStorage.setItem('scopic_booted', 'true');
+            } catch (e) {
+                // Ignore storage errors (private browsing)
+            }
+        }
+
+        // Async Sleep Helper
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // Typewriter Effect
+        async function typeLine(text, colorClass = 'text-gray-300') {
+            const line = document.createElement('div');
+            line.className = `${colorClass} mb-1`;
+            if(elements.bootTerminal) {
+                elements.bootTerminal.appendChild(line);
+                elements.bootTerminal.scrollTop = elements.bootTerminal.scrollHeight;
+                line.textContent = `> ${text}`;
+            }
+        }
+
+        // Boot Sequence Logic
+        async function runBootSequence() {
+            // Check if already booted in this session
+            let alreadyBooted = false;
+            try {
+                alreadyBooted = sessionStorage.getItem('scopic_booted') === 'true';
+            } catch(e) {}
+
+            if (alreadyBooted) {
+                showApp();
+                return;
+            }
+
+            // Ensure boot screen is visible if we are running the sequence
+            elements.bootScreen.style.display = 'flex';
+
+            // Skip button handler
+            if(elements.skipBtn) {
+                elements.skipBtn.addEventListener('click', showApp);
+            }
+            document.addEventListener('keydown', (e) => {
+                if(e.key === 'Escape') showApp();
+            });
+
+            // Run Lines
+            for (let i = 0; i < TERMINAL_LINES.length; i++) {
+                // If user skipped (display none), stop script
+                if (elements.bootScreen.style.display === 'none') return;
+
+                const line = TERMINAL_LINES[i];
+                await wait(line.delay);
+                await typeLine(line.text, line.color);
+                
+                // Update Progress Bar
+                if(elements.progressBar) {
+                    const percent = Math.round(((i + 1) / TERMINAL_LINES.length) * 100);
+                    elements.progressBar.style.width = `${percent}%`;
+                    elements.progressText.innerText = `${percent}%`;
+                }
+            }
+
+            await wait(800);
+            showApp();
+        }
+
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Populate refs
+            elements = {
+                bootScreen: document.getElementById('boot-screen'),
+                bootTerminal: document.getElementById('boot-terminal'),
+                progressBar: document.getElementById('boot-progress-bar'),
+                progressText: document.getElementById('progress-percent'),
+                appContainer: document.getElementById('app-container'),
+                mobileMenuBtn: document.getElementById('menu-btn'),
+                mobileMenu: document.getElementById('mobile-menu'),
+                skipBtn: document.getElementById('skip-boot')
+            };
+
+            // Init Icons
+            try {
+                lucide.createIcons();
+            } catch(e) {
+                console.log('Icons failed to load');
+            }
+
+            // Mobile Menu
+            if(elements.mobileMenuBtn) {
+                elements.mobileMenuBtn.addEventListener('click', () => {
+                    if (elements.mobileMenu.classList.contains('hidden')) {
+                        elements.mobileMenu.classList.remove('hidden');
+                        elements.mobileMenu.classList.add('flex');
+                    } else {
+                        elements.mobileMenu.classList.add('hidden');
+                        elements.mobileMenu.classList.remove('flex');
+                    }
+                });
+            }
+
+            // Mobile menu close links
+            document.querySelectorAll('#mobile-menu a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if(elements.mobileMenu) {
+                        elements.mobileMenu.classList.add('hidden');
+                        elements.mobileMenu.classList.remove('flex');
+                    }
+                });
+            });
+
+            // Start Boot Sequence with a safety fallback
+            // We race the font loader against a 1 second timeout. 
+            // If fonts take longer than 1s, we start anyway to avoid black screen.
+            const fontCheck = document.fonts ? document.fonts.ready : Promise.resolve();
+            const safetyTimeout = new Promise(resolve => setTimeout(resolve, 1000));
+
+            Promise.race([fontCheck, safetyTimeout]).then(() => {
+                runBootSequence();
+            });
+        });
+
+    </script>
+</body>
+</html>
