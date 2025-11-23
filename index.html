@@ -60,6 +60,10 @@
             -webkit-font-smoothing: none;
         }
 
+        body.modal-open {
+            overflow: hidden;
+        }
+
         /* --- CRT OVERLAY LAYERS --- */
         .crt-wrapper {
             position: fixed;
@@ -328,7 +332,9 @@
                             <img src="images/Screenshots/HeroByte-Virtual-Tabletop-11-20-2025_07_02_PM.png" 
                                  onerror="this.style.display='none'"
                                  alt="HeroByte VTT" 
-                                 class="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition duration-500 hover:scale-105 filter grayscale group-hover:grayscale-0" />
+                                 data-lightbox-src="images/Screenshots/HeroByte-Virtual-Tabletop-11-20-2025_07_02_PM.png"
+                                 data-lightbox-title="HeroByte Virtual Tabletop"
+                                 class="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition duration-500 hover:scale-105 filter grayscale group-hover:grayscale-0 cursor-zoom-in" />
                             
                             <div class="absolute bottom-4 right-4 bg-black/80 text-white px-3 py-1 font-display text-xs border border-white">
                                 LIVE_BUILD
@@ -373,14 +379,18 @@
                                     <img src="images/ConceptArt/Gemini_Generated_Image_654wpv654wpv654w.png" 
                                          alt="PolyKarter Concept Art 1" 
                                          onerror="this.style.display='none'"
-                                         class="w-full h-full object-cover border border-purple-500/30" />
+                                         data-lightbox-src="images/ConceptArt/Gemini_Generated_Image_654wpv654wpv654w.png"
+                                         data-lightbox-title="PolyKarter Concept Art A"
+                                         class="w-full h-full object-cover border border-purple-500/30 cursor-zoom-in" />
                                 </div>
                                 <div class="relative">
                                     <span class="absolute top-2 left-2 text-[10px] tracking-[0.2em] bg-black/70 text-white px-2 py-1 font-display">CONCEPT B</span>
                                     <img src="images/ConceptArt/Gemini_Generated_Image_blpjfublpjfublpj.png" 
                                          alt="PolyKarter Concept Art 2" 
                                          onerror="this.style.display='none'"
-                                         class="w-full h-full object-cover border border-purple-500/30" />
+                                         data-lightbox-src="images/ConceptArt/Gemini_Generated_Image_blpjfublpjfublpj.png"
+                                         data-lightbox-title="PolyKarter Concept Art B"
+                                         class="w-full h-full object-cover border border-purple-500/30 cursor-zoom-in" />
                                 </div>
                              </div>
                         </div>
@@ -489,6 +499,15 @@
         </footer>
     </div>
 
+    <!-- Image Lightbox -->
+    <div id="image-lightbox" class="fixed inset-0 bg-black/90 hidden items-center justify-center p-4 z-[120]">
+        <button id="lightbox-close" class="absolute top-6 right-6 text-white/80 hover:text-white text-3xl font-mono" aria-label="Close image preview">×</button>
+        <div class="max-w-5xl w-full flex flex-col items-center gap-4">
+            <img id="lightbox-img" src="" alt="Expanded artwork" class="max-h-[80vh] w-auto border border-white/30 shadow-2xl" />
+            <p id="lightbox-caption" class="text-gray-300 font-mono text-center tracking-widest text-sm"></p>
+        </div>
+    </div>
+
     <script>
         // --- CONSTANTS & STATE ---
         const TERMINAL_LINES = [
@@ -502,6 +521,7 @@
 
         // Store element references immediately when DOM is safe
         let elements = {};
+        let lightbox = {};
 
         // --- FUNCTIONS ---
 
@@ -554,9 +574,6 @@
             if(elements.skipBtn) {
                 elements.skipBtn.addEventListener('click', showApp);
             }
-            document.addEventListener('keydown', (e) => {
-                if(e.key === 'Escape') showApp();
-            });
 
             // Run Lines
             for (let i = 0; i < TERMINAL_LINES.length; i++) {
@@ -593,6 +610,13 @@
                 skipBtn: document.getElementById('skip-boot')
             };
 
+            lightbox = {
+                container: document.getElementById('image-lightbox'),
+                img: document.getElementById('lightbox-img'),
+                caption: document.getElementById('lightbox-caption'),
+                closeBtn: document.getElementById('lightbox-close')
+            };
+
             // Init Icons
             try {
                 lucide.createIcons();
@@ -613,6 +637,41 @@
                 });
             }
 
+            const closeLightbox = () => {
+                if(!lightbox.container || lightbox.container.classList.contains('hidden')) return false;
+                lightbox.container.classList.add('hidden');
+                lightbox.container.classList.remove('flex');
+                document.body.classList.remove('modal-open');
+                return true;
+            };
+
+            const openLightbox = (src, caption = '') => {
+                if(!lightbox.container || !src) return;
+                lightbox.img.src = src;
+                lightbox.img.alt = caption || 'Expanded artwork';
+                lightbox.caption.textContent = caption;
+                lightbox.container.classList.remove('hidden');
+                lightbox.container.classList.add('flex');
+                document.body.classList.add('modal-open');
+            };
+
+            if(lightbox.closeBtn) {
+                lightbox.closeBtn.addEventListener('click', closeLightbox);
+            }
+            if(lightbox.container) {
+                lightbox.container.addEventListener('click', (event) => {
+                    if(event.target === lightbox.container) {
+                        closeLightbox();
+                    }
+                });
+            }
+
+            document.querySelectorAll('[data-lightbox-src]').forEach(trigger => {
+                trigger.addEventListener('click', () => {
+                    openLightbox(trigger.dataset.lightboxSrc, trigger.dataset.lightboxTitle || trigger.alt || '');
+                });
+            });
+
             // Mobile menu close links
             document.querySelectorAll('#mobile-menu a').forEach(link => {
                 link.addEventListener('click', () => {
@@ -621,6 +680,15 @@
                         elements.mobileMenu.classList.remove('flex');
                     }
                 });
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if(e.key === 'Escape') {
+                    const lightboxClosed = closeLightbox();
+                    if(!lightboxClosed) {
+                        showApp();
+                    }
+                }
             });
 
             // Start Boot Sequence with a safety fallback
