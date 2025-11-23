@@ -1,16 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ScopicMedia | Retro Roots. Future Vision.</title>
-    <meta name="description" content="ScopicMedia Game Studio. Creators of HeroByte VTT and high-octane retro racers. Developing indie games with a PS1 aesthetic.">
-    <meta name="keywords" content="Indie Game Studio, HeroByte VTT, Kart Racer, Retro Games, PS1 Style, Game Dev">
+    <meta name="description" content="ScopicMedia Game Studio. Creators of HeroByte VTT and high-octane retro racers.">
+    <meta name="theme-color" content="#000000">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        phosphor: {
+                            DEFAULT: '#33ff00',
+                            dim: '#1a8000',
+                            bright: '#80ff66'
+                        },
+                        cyber: {
+                            DEFAULT: '#00ffff',
+                            dim: '#008080'
+                        }
+                    },
+                    fontFamily: {
+                        mono: ['VT323', 'monospace'],
+                        display: ['"Press Start 2P"', 'cursive'],
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
     
-    <!-- Google Fonts: Press Start 2P (Headers) and VT323 (Body) -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
@@ -20,639 +46,324 @@
 
     <style>
         :root {
-            --phosphor-primary: #33ff00; /* Classic Terminal Green */
-            --phosphor-secondary: #00ffff; /* Cyber Cyan */
-            --bg-color: #050505;
-            --crt-flicker: 0.02;
+            --phosphor-primary: #33ff00;
+            --phosphor-secondary: #00ffff;
+            --scanline-color: rgba(0, 0, 0, 0.5);
+            --glass-color: rgba(18, 16, 16, 0.05);
         }
 
         body {
-            background-color: #000;
+            background-color: #050505;
             color: var(--phosphor-primary);
             font-family: 'VT323', monospace;
-            margin: 0;
             overflow-x: hidden;
             -webkit-font-smoothing: none;
         }
 
-        h1, h2, h3, .pixel-font {
-            font-family: 'Press Start 2P', cursive;
-            text-transform: uppercase;
-        }
-
-        /* --- CRT EFFECTS --- */
-        .crt-container {
-            position: relative;
-            min-height: 100vh;
-            width: 100%;
-            background: radial-gradient(circle, #1a1a1a 0%, #000000 100%);
+        /* --- CRT OVERLAY LAYERS --- */
+        .crt-wrapper {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9999;
             overflow: hidden;
         }
 
-        /* Scanlines */
         .scanlines {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             background: linear-gradient(
                 to bottom,
-                rgba(255, 255, 255, 0),
-                rgba(255, 255, 255, 0) 50%,
-                rgba(0, 0, 0, 0.2) 50%,
-                rgba(0, 0, 0, 0.2)
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.3) 50%,
+                rgba(0,0,0,0.3)
             );
             background-size: 100% 4px;
-            pointer-events: none;
-            z-index: 50;
-            animation: scanlineMove 10s linear infinite;
+            animation: scanlineScroll 10s linear infinite;
         }
 
-        /* Moving Scan Bar */
-        .scan-bar {
-            width: 100%;
-            height: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            position: fixed;
-            z-index: 51;
-            top: -10%;
-            animation: scanBar 6s linear infinite;
-            pointer-events: none;
+        .vignette {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%);
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.7);
         }
 
-        /* CRT Flicker & Glow */
-        .crt-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(18, 16, 16, 0.1);
-            opacity: 0;
-            z-index: 50;
-            pointer-events: none;
-            animation: flicker 0.15s infinite;
+        .screen-curve {
+            position: absolute;
+            inset: 0;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+            /* Subtle curve effect illusion */
+            background: transparent;
         }
 
+        /* --- TEXT EFFECTS --- */
         .text-glow {
-            text-shadow: 0 0 5px var(--phosphor-primary), 0 0 10px var(--phosphor-primary);
+            text-shadow: 0 0 5px var(--phosphor-primary), 0 0 15px var(--phosphor-primary);
         }
         
-        .text-glow-cyan {
+        .text-glow-cyber {
             color: var(--phosphor-secondary);
-            text-shadow: 0 0 5px var(--phosphor-secondary), 0 0 10px var(--phosphor-secondary);
+            text-shadow: 0 0 5px var(--phosphor-secondary), 0 0 15px var(--phosphor-secondary);
         }
 
-        /* Screen Curvature Vignette */
-        .vignette {
-            position: fixed;
+        /* --- 3D MOVING GRID --- */
+        .perspective-container {
+            perspective: 600px;
+            overflow: hidden;
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+        }
+
+        .retro-grid {
+            position: absolute;
+            width: 200%;
+            height: 130%;
+            left: -50%;
             top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%);
-            box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
-            pointer-events: none;
-            z-index: 60;
+            background-image: 
+                linear-gradient(var(--phosphor-dim) 1px, transparent 1px),
+                linear-gradient(90deg, var(--phosphor-dim) 1px, transparent 1px);
+            background-size: 40px 40px;
+            transform: rotateX(60deg);
+            transform-origin: center top;
+            animation: gridMove 2s linear infinite;
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 40%);
+            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 40%);
         }
 
         /* --- ANIMATIONS --- */
-        @keyframes scanlineMove {
+        @keyframes scanlineScroll {
             0% { background-position: 0 0; }
             100% { background-position: 0 100%; }
         }
 
-        @keyframes scanBar {
-            0% { top: -10%; }
-            100% { top: 110%; }
+        @keyframes gridMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 40px; }
         }
 
-        @keyframes flicker {
-            0% { opacity: 0.02; }
-            5% { opacity: 0.05; }
-            10% { opacity: 0.02; }
-            15% { opacity: 0.06; }
-            100% { opacity: 0.02; }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
         }
 
-        @keyframes turnOn {
-            0% { transform: scale(1, 0.002) scaleX(0.2); filter: brightness(30); opacity: 0;}
-            30% { transform: scale(1, 0.002) scaleX(1); filter: brightness(10); opacity: 1;}
-            60% { transform: scale(1, 0.002) scaleX(1); filter: brightness(10); opacity: 1;}
-            100% { transform: scale(1, 1) scaleX(1); filter: brightness(1); opacity: 1;}
+        .cursor-blink::after {
+            content: '_';
+            animation: blink 1s step-end infinite;
         }
 
         /* --- UTILITIES --- */
-        .hidden-content {
+        .scrollbar-hide::-webkit-scrollbar {
             display: none;
-        }
-
-        .glitch-hover:hover {
-            animation: glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
-            color: #fff;
-        }
-
-        @keyframes glitch-skew {
-            0% { transform: skew(0deg); }
-            20% { transform: skew(-10deg); }
-            40% { transform: skew(10deg); }
-            60% { transform: skew(-5deg); }
-            80% { transform: skew(5deg); }
-            100% { transform: skew(0deg); }
-        }
-
-        @keyframes crtWarmup {
-            0% { transform: scaleY(0.05) scaleX(0.2); opacity: 0; filter: brightness(6); }
-            40% { opacity: 1; transform: scaleY(0.1) scaleX(0.6); }
-            70% { transform: scaleY(1.05) scaleX(1); }
-            100% { transform: scaleY(1) scaleX(1); opacity: 1; filter: brightness(1); }
-        }
-
-        @keyframes rgbGlitch {
-            0% { filter: drop-shadow(-6px 0 rgba(255,0,128,0.5)) drop-shadow(6px 0 rgba(0,255,255,0.5)); transform: translateX(-2px); }
-            50% { filter: drop-shadow(6px 0 rgba(255,0,128,0.3)) drop-shadow(-6px 0 rgba(0,255,255,0.3)); transform: translateX(2px); }
-            100% { filter: drop-shadow(0 0 rgba(255,0,0,0)); transform: translateX(0); }
-        }
-
-        @keyframes letterFlicker {
-            0% { opacity: 0.1; }
-            25% { opacity: 1; }
-            50% { opacity: 0.2; }
-            75% { opacity: 1; }
-            100% { opacity: 0.4; }
         }
         
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
-            width: 12px;
+            width: 10px;
             background: #000;
         }
         ::-webkit-scrollbar-thumb {
-            background: #333;
+            background: #1a1a1a;
             border: 1px solid var(--phosphor-primary);
         }
-
-        /* --- BOOT SCREEN --- */
-        #boot-screen {
-            background: radial-gradient(circle, #050505 0%, #000000 80%);
-            letter-spacing: 0.05em;
-            overflow: hidden;
-            transition: opacity 0.8s ease;
-        }
-
-        #boot-screen.boot-screen--fade {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .boot-logo-shell {
-            width: min(90vw, 480px);
-            overflow: visible;
-            padding: 2rem 0;
-        }
-
-        #boot-logo {
-            opacity: 0;
-            transform-origin: center;
-            transform: scaleY(0.05) scaleX(0.4);
-            filter: brightness(4) saturate(0.4);
-            transition: filter 0.4s ease;
-        }
-
-        #boot-logo.boot-logo--warmup {
-            animation: crtWarmup 1.2s ease-out forwards;
-        }
-
-        #boot-logo.boot-logo--glitch {
-            animation: rgbGlitch 0.45s steps(2, end);
-        }
-
-        #boot-logo.boot-logo--bloom {
-            filter: drop-shadow(0 0 16px var(--phosphor-primary)) drop-shadow(0 0 32px rgba(51,255,0,0.35));
-        }
-
-        .boot-logo-core {
-            box-shadow: inset 0 0 12px rgba(255,255,255,0.35);
-        }
-
-        .boot-letter {
-            display: inline-block;
-            transition: color 0.2s ease, text-shadow 0.2s ease;
-            opacity: 0.7;
-        }
-
-        .boot-letter.boot-letter--flicker {
-            animation: letterFlicker 0.3s linear 2;
-        }
-
-        .boot-letter.boot-letter--active {
-            opacity: 1;
-            color: #f0fdf4;
-            text-shadow: 0 0 6px rgba(255,255,255,0.4), 0 0 12px rgba(51,255,0,0.6);
-        }
-
-        #boot-terminal {
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(51, 255, 0, 0.2);
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 0, 0, 0.8);
-            padding: 1.5rem;
-            min-height: 8rem;
-            max-height: 220px;
-            overflow-y: auto;
-        }
-
-        .boot-terminal-line {
-            font-size: 1.1rem;
-            color: #86efac;
-            margin-bottom: 0.25rem;
-            white-space: nowrap;
-        }
-
-        .boot-terminal-line.warn {
-            color: #fbbf24;
-        }
-
-        .boot-terminal-line.resolve {
-            color: #7dd3fc;
-        }
-
-        .boot-progress {
-            width: 100%;
-            max-width: 32rem;
-        }
-
-        .boot-progress-bar {
-            display: flex;
-            gap: 0.35rem;
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(51, 255, 0, 0.3);
-            padding: 0.6rem;
-            box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.8);
-        }
-
-        .progress-block {
-            flex: 1;
-            height: 18px;
-            border: 1px solid rgba(51, 255, 0, 0.2);
-            background: rgba(10, 25, 10, 0.4);
-            opacity: 0.25;
-            transition: background 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
-        }
-
-        .progress-block.filled {
+        ::-webkit-scrollbar-thumb:hover {
             background: var(--phosphor-primary);
-            box-shadow: 0 0 12px rgba(51, 255, 0, 0.9);
-            opacity: 1;
+        }
+
+        /* --- BOOT SCREEN SPECIFICS --- */
+        .boot-visible {
+            display: flex;
+        }
+        .boot-hidden {
+            display: none;
+        }
+        
+        .placeholder-pattern {
+            background-color: #111;
+            background-image: radial-gradient(#222 15%, transparent 16%), radial-gradient(#222 15%, transparent 16%);
+            background-size: 10px 10px;
+            background-position: 0 0, 5px 5px;
         }
     </style>
 </head>
-<body>
+<body class="selection:bg-phosphor selection:text-black">
 
-    <!-- CRT Overlay Effects (Fixed on top) -->
-    <div class="scanlines"></div>
-    <div class="scan-bar"></div>
-    <div class="crt-overlay"></div>
-    <div class="vignette"></div>
+    <!-- CRT Visual Layer -->
+    <div class="crt-wrapper">
+        <div class="scanlines"></div>
+        <div class="vignette"></div>
+        <div class="screen-curve"></div>
+    </div>
 
-    <!-- BOOT SEQUENCE -->
-    <div id="boot-screen" class="fixed inset-0 bg-black z-[100] flex flex-col items-center justify-center text-center p-4 gap-6">
-        <div class="boot-logo-shell mb-4">
-            <div id="boot-logo">
-                <div class="w-24 h-24 border-4 border-white rotate-45 mx-auto mb-4 flex items-center justify-center boot-logo-core">
-                    <div class="w-16 h-16 bg-white rotate-90"></div>
-                </div>
-                <h1 class="text-4xl md:text-6xl text-white tracking-widest font-bold pixel-font">
-                    <span class="boot-letter">S</span><span class="boot-letter">C</span><span class="boot-letter">O</span><span class="boot-letter">P</span><span class="boot-letter">I</span><span class="boot-letter">C</span>
-                </h1>
-                <h2 class="text-xl md:text-2xl text-yellow-400 tracking-widest mt-2 pixel-font">MEDIA</h2>
+    <!-- BOOT SEQUENCE (ID: boot-screen) -->
+    <div id="boot-screen" class="fixed inset-0 bg-black z-[100] flex-col items-center justify-center p-4 gap-6 font-mono boot-hidden">
+        
+        <!-- Boot Logo -->
+        <div class="mb-8 text-center relative">
+            <div class="w-20 h-20 border-4 border-white rotate-45 mx-auto mb-6 flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.5)]">
+                <div class="w-12 h-12 bg-white rotate-90"></div>
             </div>
+            <h1 class="text-4xl md:text-6xl text-white tracking-[0.2em] font-bold font-display animate-pulse">
+                SCOPIC
+            </h1>
+            <h2 class="text-xl md:text-2xl text-yellow-400 tracking-widest mt-2 font-display">MEDIA</h2>
         </div>
-        <div id="boot-terminal" class="w-full max-w-2xl font-mono text-left">
-            <!-- Dynamic logs -->
+
+        <!-- Terminal Logs -->
+        <div id="boot-terminal" class="w-full max-w-2xl h-48 overflow-y-auto font-mono text-left bg-black/80 border border-phosphor/30 p-4 shadow-inner text-lg leading-snug scrollbar-hide">
+            <!-- Dynamic logs inserted here via JS -->
         </div>
-        <div class="boot-progress font-mono text-left">
-            <div class="flex justify-between text-green-400 text-sm tracking-wide mb-2">
-                <span>CALIBRATING SIGNAL</span>
+
+        <!-- Progress Bar -->
+        <div class="w-full max-w-2xl">
+            <div class="flex justify-between text-phosphor text-sm tracking-wide mb-2">
+                <span class="animate-pulse">SYSTEM INITIALIZATION</span>
                 <span id="progress-percent">00%</span>
             </div>
-            <div id="boot-progress-bar" class="boot-progress-bar"></div>
+            <div class="h-6 w-full border border-phosphor p-1">
+                <div id="boot-progress-bar" class="h-full bg-phosphor w-0 shadow-[0_0_10px_#33ff00]"></div>
+            </div>
+            
+            <button id="skip-boot" class="mt-8 text-gray-500 hover:text-white text-xs underline decoration-dotted cursor-pointer mx-auto block">
+                [ESC] SKIP BOOT SEQUENCE
+            </button>
         </div>
     </div>
 
-    <!-- MAIN APP CONTAINER -->
-    <div id="app-container" class="crt-container hidden-content opacity-0 transition-opacity duration-1000">
+    <!-- MAIN APP CONTENT -->
+    <div id="app-container" class="opacity-0 transition-opacity duration-1000">
         
         <!-- Navigation -->
-        <nav class="sticky top-0 z-40 bg-black/90 border-b border-green-900 backdrop-blur-sm">
-            <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
-                <div class="flex items-center gap-3 mb-4 md:mb-0">
-                    <i data-lucide="gamepad-2" class="text-green-400 w-8 h-8"></i>
-                    <span class="text-2xl pixel-font text-glow text-white">SCOPIC<span class="text-green-400">MEDIA</span></span>
-                </div>
-                <ul class="flex gap-6 md:gap-8 text-xl md:text-2xl">
-                    <li><a href="#home" class="hover:text-white hover:underline decoration-green-500 underline-offset-4 transition-all">HOME</a></li>
-                    <li><a href="#games" class="hover:text-white hover:underline decoration-green-500 underline-offset-4 transition-all">GAMES</a></li>
-                    <li><a href="#devlog" class="hover:text-white hover:underline decoration-green-500 underline-offset-4 transition-all">LOGS</a></li>
-                    <li><a href="#contact" class="hover:text-white hover:underline decoration-green-500 underline-offset-4 transition-all">CONTACT</a></li>
+        <nav class="fixed top-0 w-full z-50 bg-black/90 border-b border-phosphor/30 backdrop-blur-md">
+            <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+                <!-- Logo -->
+                <a href="#home" class="flex items-center gap-2 group">
+                    <i data-lucide="gamepad-2" class="text-phosphor w-6 h-6 group-hover:rotate-12 transition-transform"></i>
+                    <span class="text-xl font-display text-white group-hover:text-glow transition-all">SCOPIC</span>
+                </a>
+
+                <!-- Desktop Menu -->
+                <ul class="hidden md:flex gap-8 text-xl tracking-wide">
+                    <li><a href="#home" class="hover:text-phosphor hover:text-glow transition-all">[HOME]</a></li>
+                    <li><a href="#games" class="hover:text-cyber hover:text-glow-cyber transition-all">[PROJECTS]</a></li>
+                    <li><a href="#devlog" class="hover:text-yellow-400 text-shadow-yellow transition-all">[LOGS]</a></li>
+                    <li><a href="#contact" class="hover:text-white hover:underline decoration-phosphor underline-offset-4 transition-all">[CONTACT]</a></li>
                 </ul>
+
+                <!-- Mobile Menu Button -->
+                <button id="menu-btn" class="md:hidden text-phosphor hover:text-white">
+                    <i data-lucide="menu" class="w-8 h-8"></i>
+                </button>
+            </div>
+
+            <!-- Mobile Menu Dropdown -->
+            <div id="mobile-menu" class="hidden md:hidden bg-black border-b border-phosphor/30 absolute w-full left-0 top-full p-4 flex-col gap-4 text-center text-xl">
+                <a href="#home" class="block py-2 hover:bg-phosphor/10">[HOME]</a>
+                <a href="#games" class="block py-2 hover:bg-phosphor/10">[PROJECTS]</a>
+                <a href="#devlog" class="block py-2 hover:bg-phosphor/10">[LOGS]</a>
+                <a href="#contact" class="block py-2 hover:bg-phosphor/10">[CONTACT]</a>
             </div>
         </nav>
 
         <!-- Hero Section -->
-        <header id="home" class="container mx-auto px-4 py-16 md:py-24 flex flex-col items-center text-center min-h-[70vh] justify-center relative">
-            <div class="absolute inset-0 border-x border-green-900/30 pointer-events-none mx-4 md:mx-12"></div>
-            
-            <div class="bg-green-900/20 px-4 py-1 rounded mb-6 border border-green-500/50 inline-block animate-pulse">
-                SYSTEM READY // V.2025.1
+        <header id="home" class="relative min-h-screen flex flex-col items-center justify-center text-center overflow-hidden pt-16">
+            <!-- 3D Grid Background -->
+            <div class="perspective-container">
+                <div class="retro-grid"></div>
             </div>
             
-            <h1 class="text-4xl md:text-7xl mb-6 leading-tight text-glow text-white pixel-font glitch-hover cursor-default">
-                RETRO ROOTS.<br/>
-                <span class="text-green-400">FUTURE VISION.</span>
-            </h1>
-            
-            <p class="text-xl md:text-3xl max-w-2xl text-gray-300 mb-10 leading-relaxed">
-                Crafting immersive digital experiences with the soul of the 90s and the tech of tomorrow.
-            </p>
+            <div class="relative z-10 px-4 max-w-4xl">
+                <div class="inline-block border border-phosphor/50 bg-black/50 backdrop-blur px-3 py-1 mb-6 text-sm md:text-base animate-pulse text-phosphor-bright">
+                    :: SYSTEM READY // V.2025.1 ::
+                </div>
+                
+                <h1 class="text-4xl md:text-7xl mb-6 leading-tight font-display text-white drop-shadow-lg">
+                    RETRO ROOTS.<br/>
+                    <span class="text-phosphor text-glow cursor-blink">FUTURE VISION</span>
+                </h1>
+                
+                <p class="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed bg-black/40 p-2">
+                    Crafting immersive digital experiences with the soul of the 90s and the tech of tomorrow.
+                </p>
 
-            <div class="flex flex-col md:flex-row gap-6">
-                <a href="#games" class="pixel-font bg-green-600 hover:bg-green-500 text-black py-4 px-8 text-sm md:text-base transition-all hover:scale-105 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-                    BROWSE PROJECTS
-                </a>
-                <a href="#contact" class="pixel-font border-2 border-green-500 text-green-400 hover:text-white hover:border-white py-4 px-8 text-sm md:text-base transition-all hover:scale-105">
-                    INITIATE CONTACT
-                </a>
+                <div class="flex flex-col sm:flex-row justify-center gap-6">
+                    <a href="#games" class="font-display bg-phosphor hover:bg-white text-black py-4 px-8 text-sm transition-all hover:scale-105 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
+                        BROWSE_PROJECTS
+                    </a>
+                    <a href="#contact" class="font-display border-2 border-phosphor text-phosphor hover:text-white hover:border-white py-4 px-8 text-sm transition-all hover:scale-105 hover:bg-phosphor/10">
+                        INITIATE_CONTACT
+                    </a>
+                </div>
             </div>
         </header>
 
         <!-- Projects Section -->
-        <section id="games" class="border-t-2 border-green-900 bg-[#0a0a0a] py-20">
+        <section id="games" class="py-24 bg-[#0a0a0a] border-t border-phosphor/20 relative">
             <div class="container mx-auto px-4">
-                <div class="flex items-center gap-4 mb-12">
-                    <div class="w-4 h-4 bg-green-500 animate-bounce"></div>
-                    <h2 class="text-3xl md:text-5xl text-white pixel-font">PROJECTS_</h2>
-                    <div class="h-1 bg-green-900 flex-grow"></div>
+                <div class="flex items-end gap-4 mb-16 border-b border-phosphor/30 pb-4">
+                    <div class="w-3 h-8 bg-phosphor animate-pulse"></div>
+                    <h2 class="text-3xl md:text-5xl text-white font-display">PROJECT_DATABASE</h2>
                 </div>
 
                 <!-- Game 1 -->
-                <article class="flex flex-col lg:flex-row gap-10 mb-24 group">
-                    <div class="w-full lg:w-1/2 relative border-4 border-gray-800 group-hover:border-green-500 transition-colors p-1">
-                        <div class="w-full aspect-video bg-slate-900 overflow-hidden relative">
-                            <img src="images/Screenshots/HeroByte-Virtual-Tabletop-11-20-2025_07_02_PM.png" alt="HeroByte virtual tabletop session" class="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100 transition duration-500" loading="lazy" />
-                            <div class="absolute inset-0 bg-gradient-to-tr from-green-500/15 via-transparent to-black/50"></div>
-                            <div class="absolute top-3 left-3 bg-black/70 text-green-300 px-3 py-1 text-xs border border-green-500/60 pixel-font tracking-wide">LIVE BUILD</div>
-                            <span class="absolute bottom-3 right-3 text-4xl md:text-6xl font-bold text-white/30 pixel-font">VTT</span>
+                <article class="flex flex-col lg:flex-row gap-12 mb-24 group">
+                    <!-- Image Area -->
+                    <div class="w-full lg:w-1/2 relative border-4 border-[#222] group-hover:border-phosphor transition-colors duration-300 bg-black p-1 shadow-lg">
+                        <div class="w-full aspect-video placeholder-pattern relative overflow-hidden">
+                            <!-- Fallback UI for missing image -->
+                            <div class="absolute inset-0 flex flex-col items-center justify-center text-gray-600">
+                                <i data-lucide="image-off" class="w-12 h-12 mb-2"></i>
+                                <span>NO SIGNAL</span>
+                            </div>
+                            <!-- Actual Image (Use generic placeholder if real one missing) -->
+                            <img src="images/Screenshots/HeroByte-VTT.png" 
+                                 onerror="this.style.display='none'"
+                                 alt="HeroByte VTT" 
+                                 class="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 transition duration-500 hover:scale-105 filter grayscale group-hover:grayscale-0" />
+                            
+                            <div class="absolute bottom-4 right-4 bg-black/80 text-white px-3 py-1 font-display text-xs border border-white">
+                                LIVE_BUILD
+                            </div>
                         </div>
                     </div>
+                    
+                    <!-- Content Area -->
                     <div class="w-full lg:w-1/2 flex flex-col justify-center">
-                        <div class="flex items-baseline gap-4 mb-4">
-                            <h3 class="text-3xl md:text-4xl text-glow-cyan mb-2">HeroByte VTT</h3>
-                            <span class="bg-cyan-900/50 text-cyan-300 px-2 py-1 text-sm border border-cyan-500">ALPHA</span>
+                        <div class="flex items-center gap-4 mb-4">
+                            <h3 class="text-4xl md:text-5xl text-cyber text-glow-cyber font-display">HeroByte</h3>
+                            <span class="bg-cyber-dim/20 text-cyber border border-cyber px-2 py-0.5 text-xs">V.0.9.2</span>
                         </div>
-                        <p class="text-2xl text-gray-300 mb-6 leading-relaxed">
+                        <p class="text-xl text-gray-300 mb-8 leading-relaxed border-l-2 border-gray-700 pl-4">
                             System-agnostic virtual tabletop inspired by NES/SNES RPGs. Built for browser play with retro pixel menus, real-time sync, and peer-to-peer voice chat.
                         </p>
-                        <ul class="mb-8 space-y-2 text-lg text-gray-400 font-mono">
-                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-500"></i> WebRTC Voice & Real-time Sync</li>
-                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-500"></i> Role-based Code Splitting</li>
-                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-500"></i> Konva-based Rendering</li>
-                        </ul>
+                        <div class="grid grid-cols-2 gap-4 mb-8 text-lg text-gray-400">
+                            <div class="flex items-center gap-2"><i data-lucide="cpu" class="text-phosphor w-4"></i> WebRTC Sync</div>
+                            <div class="flex items-center gap-2"><i data-lucide="layers" class="text-phosphor w-4"></i> Konva Render</div>
+                            <div class="flex items-center gap-2"><i data-lucide="mic" class="text-phosphor w-4"></i> Voice Chat</div>
+                            <div class="flex items-center gap-2"><i data-lucide="code" class="text-phosphor w-4"></i> React/Vite</div>
+                        </div>
                         <div class="flex gap-4">
-                            <a href="https://github.com/loshunter/HeroByte" target="_blank" class="flex items-center gap-2 bg-transparent border border-cyan-500 text-cyan-400 px-6 py-3 hover:bg-cyan-500 hover:text-black transition-colors pixel-font text-sm">
-                                <i data-lucide="github"></i> GITHUB
-                            </a>
-                            <button class="flex items-center gap-2 text-gray-400 hover:text-white px-4 py-3">
-                                <i data-lucide="youtube"></i> TRAILER
+                            <button class="bg-transparent border border-cyber text-cyber px-6 py-3 hover:bg-cyber hover:text-black transition-colors font-display text-xs flex items-center gap-2">
+                                <i data-lucide="github" class="w-4 h-4"></i> REPO
+                            </button>
+                            <button class="bg-gray-800 text-white px-6 py-3 hover:bg-white hover:text-black transition-colors font-display text-xs flex items-center gap-2">
+                                <i data-lucide="play" class="w-4 h-4"></i> DEMO
                             </button>
                         </div>
                     </div>
                 </article>
 
                 <!-- Game 2 -->
-                <article class="flex flex-col lg:flex-row-reverse gap-10 mb-12 group">
-                    <div class="w-full lg:w-1/2 relative border-4 border-gray-800 group-hover:border-purple-500 transition-colors p-1">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 h-full">
-                            <div class="relative aspect-video bg-slate-900 overflow-hidden">
-                                <img src="images/ConceptArt/Gemini_Generated_Image_654wpv654wpv654w.png" alt="LowPolyKarter neon highway concept art" class="absolute inset-0 w-full h-full object-cover scale-105 transition duration-500 group-hover:scale-100" loading="lazy" />
-                                <div class="absolute inset-0 bg-purple-500/15"></div>
-                                <div class="absolute top-2 right-2 bg-black/70 text-purple-200 px-2 py-1 text-[10px] border border-purple-400/60 pixel-font tracking-wide">CONCEPT ART</div>
-                                <div class="absolute bottom-2 left-2 bg-black/60 text-purple-200 px-2 py-1 text-xs border border-purple-400/60 pixel-font tracking-wide">NEON CIRCUIT</div>
+                <article class="flex flex-col lg:flex-row-reverse gap-12 group">
+                    <div class="w-full lg:w-1/2 relative border-4 border-[#222] group-hover:border-purple-500 transition-colors duration-300 bg-black p-1 shadow-lg">
+                        <div class="w-full aspect-video placeholder-pattern relative overflow-hidden bg-purple-900/10">
+                             <!-- Fallback UI -->
+                             <div class="absolute inset-0 flex flex-col items-center justify-center text-purple-500/50">
+                                <i data-lucide="car" class="w-12 h-12 mb-2"></i>
+                                <span>CONCEPT RENDER</span>
                             </div>
-                            <div class="relative aspect-video bg-slate-900 overflow-hidden">
-                                <img src="images/ConceptArt/Gemini_Generated_Image_blpjfublpjfublpj.png" alt="LowPolyKarter canyon ruins concept art" class="absolute inset-0 w-full h-full object-cover scale-105 transition duration-500 group-hover:scale-100" loading="lazy" />
-                                <div class="absolute inset-0 bg-purple-500/15"></div>
-                                <div class="absolute top-2 right-2 bg-black/70 text-purple-200 px-2 py-1 text-[10px] border border-purple-400/60 pixel-font tracking-wide">CONCEPT ART</div>
-                                <div class="absolute bottom-2 left-2 bg-black/60 text-purple-200 px-2 py-1 text-xs border border-purple-400/60 pixel-font tracking-wide">RUIN RUN</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="w-full lg:w-1/2 flex flex-col justify-center text-left lg:text-right">
-                        <div class="flex items-baseline gap-4 mb-4 justify-start lg:justify-end">
-                             <span class="bg-purple-900/50 text-purple-300 px-2 py-1 text-sm border border-purple-500">PROTOTYPE</span>
-                            <h3 class="text-3xl md:text-4xl text-purple-400 text-glow mb-2">LowPolyKarter</h3>
-                        </div>
-                        <p class="text-2xl text-gray-300 mb-6 leading-relaxed">
-                            High-octane arcade racing with low-poly aesthetics. Drift through neon cityscapes and ancient ruins in this love letter to 90s kart racers.
-                        </p>
-                        <div class="flex gap-4 justify-start lg:justify-end">
-                            <a href="https://github.com/loshunter/LowPolyKarter" target="_blank" class="flex items-center gap-2 bg-transparent border border-purple-500 text-purple-400 px-6 py-3 hover:bg-purple-500 hover:text-black transition-colors pixel-font text-sm">
-                                <i data-lucide="github"></i> GITHUB
-                            </a>
-                        </div>
-                    </div>
-                </article>
-            </div>
-        </section>
-
-        <!-- Dev Blog Section -->
-        <section id="devlog" class="py-20 bg-[#050505]">
-            <div class="container mx-auto px-4">
-                <div class="flex items-center gap-4 mb-12 justify-center">
-                     <h2 class="text-3xl md:text-5xl text-white pixel-font">DEV_LOGS</h2>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Post 1 -->
-                    <a href="#" class="block border border-green-900 bg-gray-900/50 p-6 hover:bg-green-900/20 hover:border-green-500 transition-all group">
-                        <div class="text-green-500 text-sm font-mono mb-2">NOV 18, 2025</div>
-                        <h4 class="text-2xl text-white mb-3 group-hover:text-green-400 pixel-font text-xs md:text-sm leading-relaxed">HEROBYTE: WEBRTC VOICE</h4>
-                        <p class="text-gray-400 text-lg">Implementing peer-to-peer audio using SimplePeer for lag-free comms...</p>
-                    </a>
-                    <!-- Post 2 -->
-                    <a href="#" class="block border border-green-900 bg-gray-900/50 p-6 hover:bg-green-900/20 hover:border-green-500 transition-all group">
-                        <div class="text-green-500 text-sm font-mono mb-2">OCT 02, 2025</div>
-                        <h4 class="text-2xl text-white mb-3 group-hover:text-green-400 pixel-font text-xs md:text-sm leading-relaxed">LOWPOLYKARTER DRIFT PHYSICS</h4>
-                        <p class="text-gray-400 text-lg">Tuning the tire grip variables to hit that sweet spot between sim and arcade...</p>
-                    </a>
-                    <!-- Post 3 -->
-                    <a href="#" class="block border border-green-900 bg-gray-900/50 p-6 hover:bg-green-900/20 hover:border-green-500 transition-all group">
-                        <div class="text-green-500 text-sm font-mono mb-2">SEP 15, 2025</div>
-                        <h4 class="text-2xl text-white mb-3 group-hover:text-green-400 pixel-font text-xs md:text-sm leading-relaxed">KONVA PERFORMANCE TUNING</h4>
-                        <p class="text-gray-400 text-lg">Optimizing the map rendering pipeline for HeroByte's canvas layer...</p>
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Contact Section -->
-        <section id="contact" class="py-20 border-t-2 border-green-900 bg-[#020202] relative overflow-hidden">
-             <!-- Grid Background -->
-             <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(#0f0 1px, transparent 1px), linear-gradient(90deg, #0f0 1px, transparent 1px); background-size: 40px 40px;"></div>
-
-            <div class="container mx-auto px-4 relative z-10">
-                <div class="max-w-3xl mx-auto bg-gray-900/80 border border-green-600 p-8 md:p-12 shadow-[8px_8px_0px_0px_rgba(20,83,45,1)]">
-                    <h2 class="text-3xl md:text-4xl text-white pixel-font mb-8 text-center">CONNECT WITH US</h2>
-                    
-                    <form class="space-y-6" onsubmit="event.preventDefault(); alert('TRANSMISSION SENT SUCCESSFULLY.');">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="space-y-2">
-                                <label class="text-green-400 font-mono text-lg">USER_ID</label>
-                                <input type="text" class="w-full bg-black border border-green-700 text-green-400 p-3 font-mono focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400" placeholder="Name">
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-green-400 font-mono text-lg">COMM_CHANNEL</label>
-                                <input type="email" class="w-full bg-black border border-green-700 text-green-400 p-3 font-mono focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400" placeholder="Email">
-                            </div>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-green-400 font-mono text-lg">DATA_PACKET</label>
-                            <textarea rows="4" class="w-full bg-black border border-green-700 text-green-400 p-3 font-mono focus:outline-none focus:border-green-400 focus:ring-1 focus:ring-green-400" placeholder="Your message..."></textarea>
-                        </div>
-                        <button type="submit" class="w-full bg-green-600 hover:bg-green-500 text-black font-bold py-4 pixel-font text-sm transition-colors">
-                            SEND TRANSMISSION
-                        </button>
-                    </form>
-
-                    <div class="flex justify-center gap-8 mt-12">
-                        <a href="https://x.com/SCOPICMEDIA" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-white transition-colors"><i data-lucide="twitter" class="w-8 h-8"></i></a>
-                        <a href="https://github.com/loshunter" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-white transition-colors"><i data-lucide="github" class="w-8 h-8"></i></a>
-                        <a href="https://www.instagram.com/scopic.media/" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-white transition-colors"><i data-lucide="instagram" class="w-8 h-8"></i></a>
-                        <a href="#" class="text-gray-500 hover:text-white transition-colors"><i data-lucide="gamepad" class="w-8 h-8"></i></a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <footer class="py-8 bg-black text-center border-t border-green-900/50">
-            <p class="text-gray-600 font-mono">© 2025 SCOPIC MEDIA. ALL RIGHTS RESERVED.</p>
-            <p class="text-xs text-gray-800 mt-2">SIGNAL STRENGTH: 100%</p>
-        </footer>
-    </div>
-
-    <script>
-        // Initialize Lucide Icons
-        lucide.createIcons();
-
-        // Boot Sequence Enhancements
-        document.addEventListener('DOMContentLoaded', () => {
-            const bootScreen = document.getElementById('boot-screen');
-            const bootLogo = document.getElementById('boot-logo');
-            const bootLetters = document.querySelectorAll('.boot-letter');
-            const bootTerminal = document.getElementById('boot-terminal');
-            const appContainer = document.getElementById('app-container');
-            const progressBar = document.getElementById('boot-progress-bar');
-            const progressPercent = document.getElementById('progress-percent');
-
-            const TOTAL_BLOCKS = 12;
-            const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();
-            const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-            const terminalLines = [
-                { text: "Initializing Retro-BIOS v2.1... AUTHORIZED" },
-                { text: "Mapping VRAM apertures... FOUND 4096KB" },
-                { text: "Scanning PCI bus for nostalgia GPUs... VOODOO5 LOCKED" },
-                { text: "Warning: Sarcasm module uncalibrated.", type: "warn", resolution: "Auto-tuning dad-joke drivers... OK" },
-                { text: "Mounting /dev/cartridge ... OK" },
-                { text: "Checksum HERO_BYTE.KRN ... PASS" },
-                { text: "Warning: Coffee warmer offline.", type: "warn", resolution: "Routing spare GPU heat... BARISTA MODE ENABLED" },
-                { text: "Booting ScopicOS v1.0 ... ENGAGE" }
-            ];
-
-            const progressBlocks = Array.from({ length: TOTAL_BLOCKS }, () => {
-                const block = document.createElement('span');
-                block.className = 'progress-block';
-                progressBar.appendChild(block);
-                return block;
-            });
-
-            const typeLine = async ({ text, type }) => {
-                const line = document.createElement('div');
-                line.className = `boot-terminal-line ${type ?? ''}`;
-                bootTerminal.appendChild(line);
-                const content = `> ${text}`;
-
-                for (const char of content) {
-                    line.textContent += char;
-                    bootTerminal.scrollTop = bootTerminal.scrollHeight;
-                    await wait(8 + Math.random() * 18);
-                }
-            };
-
-            const runTerminal = async () => {
-                for (const entry of terminalLines) {
-                    await wait(90 + Math.random() * 210);
-                    await typeLine(entry);
-                    if (entry.resolution) {
-                        await wait(80 + Math.random() * 160);
-                        await typeLine({ text: entry.resolution, type: 'resolve' });
-                    }
-                }
-            };
-
-            const animateProgressBar = async () => {
-                for (let i = 0; i < progressBlocks.length; i++) {
-                    if (i === progressBlocks.length - 1) {
-                        await fontsReady;
-                        await wait(120);
-                    } else {
-                        await wait(70 + Math.random() * 140);
-                    }
-                    progressBlocks[i].classList.add('filled');
-                    const percent = Math.min(100, Math.round(((i + 1) / TOTAL_BLOCKS) * 100));
-                    progressPercent.textContent = `${percent.toString().padStart(2, '0')}%`;
-                }
-            };
-
-            const warmupLogo = async () => {
-                bootLogo.classList.add('boot-logo--warmup');
-                await wait(800);
-                bootLogo.classList.add('boot-logo--glitch');
-                setTimeout(() => bootLogo.classList.remove('boot-logo--glitch'), 450);
-            };
-
-            const flickerLetters = async () => {
-                for (const letter of bootLetters) {
-                    letter.classList.add('boot-letter--flicker');
-                    await wait(45 + Math.random() * 70);
-                    letter.classList.remove('boot-letter--flicker');
-                    letter.classList.add('boot-letter--active');
-                }
-            };
-
-            const revealApp = async () => {
-                bootScreen.classList.add('boot-screen--fade');
-                await wait(800);
-                bootScreen.style.display = 'none';
-                appContainer.classList.remove('hidden-content');
-                appContainer.style.display = 'block';
-                appContainer.style.opacity = '1';
-                requestAnimationFrame(() => {
-                    appContainer.style.animation = "turnOn 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards";
-                });
-            };
-
-            const runBootSequence = async () => {
-                await warmupLogo();
-                await Promise.all([runTerminal(), animateProgressBar()]);
-                await flickerLetters();
-                bootLogo.classList.add('boot-logo--bloom');
-                await wait(400);
-                await revealApp();
-            };
-
-            runBootSequence();
-        });
-    </script>
-</body>
-</html>
+                            <!-- Placeholder content -->
+                            <div class="absolute inset-0 grid grid-cols-2 gap-1 p-1">
